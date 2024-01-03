@@ -13,6 +13,7 @@ using tibiamonoopengl.Rsa;
 using Org.BouncyCastle.Crypto;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
 
 namespace tibiamonoopengl
@@ -104,23 +105,29 @@ namespace tibiamonoopengl
 
                 // Prepare the initial message
                 byte[] initialMessage = PrepareInitialMessage();
-
+                Debug.WriteLine(initialMessage);
                 // Send the initial message
                 await networkStream.WriteAsync(initialMessage, 0, initialMessage.Length);
 
                 // Start listening to the server
-                StartReceivingData();
+                //StartReceivingData();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error connecting to server: {ex.Message}");
             }
         }
-
+        //skip first, second \0
         private byte[] PrepareInitialMessage()
         {
-            // Example: Let's say the initial message is just the protocol version (2 bytes)
-            ushort protocolVersion = 1100; // Example protocol version
+            // Assuming msg.buffer is a byte array
+            byte[] msgBuffer = new byte[] { 0x00, 0x00 }; // Example byte array with values 10 and 27
+
+            // Combine the two bytes into a ushort
+            // The first byte (msgBuffer[0]) is the high-order byte, and the second byte (msgBuffer[1]) is the low-order byte
+            ushort protocolVersion = (ushort)((msgBuffer[0] << 8) | msgBuffer[1]);
+
+            // Convert ushort to byte array
             byte[] message = BitConverter.GetBytes(protocolVersion);
 
             // If BitConverter.IsLittleEndian is true, reverse the array to get Big Endian format
@@ -135,29 +142,33 @@ namespace tibiamonoopengl
 
 
 
-        private async void StartReceivingData()
+
+
+        private async void StartReceivingData(GameTime gameTime) // Pass GameTime from the game loop
         {
             try
             {
-                byte[] buffer = new byte[1024]; // Adjust buffer size as needed
+                TibiaNetworkStream tibiaNetworkStream = new TibiaNetworkStream(networkStream);
 
                 while (tcpClient.Connected)
                 {
-                    int bytesRead = await networkStream.ReadAsync(buffer, 0, buffer.Length);
-                    if (bytesRead > 0)
+                    NetworkMessage message = tibiaNetworkStream.Read(gameTime); // Pass the gameTime instance
+                    if (message != null)
                     {
                         // Process received data
-                        ProcessReceivedData(buffer, bytesRead);
+                        ProcessReceivedData(message.GetData(), message.GetSize());
                     }
-                    Debug.WriteLine($"Received data: {bytesRead}");
+                    Debug.WriteLine($"Received data: {message?.GetSize() ?? 0}");
+                    await Task.Delay(1000);
                 }
             }
             catch (Exception ex)
             {
-                // Handle data receiving errors
                 Debug.WriteLine($"Error receiving data: {ex.Message}");
             }
         }
+
+
 
         private void ProcessReceivedData(byte[] data, int bytesRead)
         {
@@ -166,7 +177,7 @@ namespace tibiamonoopengl
             string receivedString = Encoding.UTF8.GetString(data, 0, bytesRead);
 
             // Log the received data
-            Debug.WriteLine($"Received data: {receivedString}");
+            Debug.WriteLine($"Received string: {receivedString}");
 
             // If you have decryption and further processing:
             // byte[] decryptedData = rsaDecryptor.Decrypt(data, bytesRead);
@@ -178,6 +189,7 @@ namespace tibiamonoopengl
         {
             MouseState mouse = Mouse.GetState();
 
+            StartReceivingData(gameTime);
             // Do input handling
 
             // First check left mouse button

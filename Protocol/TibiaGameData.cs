@@ -8,7 +8,7 @@ namespace CTC
 {
     public class TibiaGameData
     {
-        public readonly int Version = 740;
+        public readonly int Version = 772;
         UInt32 DatVersion, SprVersion;
         UInt16 EffectCount, DistanceCount, CreatureCount, ItemCount;
         Dictionary<int, GameImage> Images = new Dictionary<int, GameImage>();

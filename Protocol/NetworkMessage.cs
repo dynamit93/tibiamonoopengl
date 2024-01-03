@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Net.Sockets;
+using System.Diagnostics;
 
 namespace CTC
 {
@@ -13,8 +14,52 @@ namespace CTC
         private int Index = 0, Size = 0;
         private byte[] Data = new byte[0x10000];
         private bool Raw = false;
+        public int GetSize()
+        {
+            return Size;
+        }
 
+        public void SendMessage(Socket socket, string messageContent)
+        {
+            NetworkMessage message = new NetworkMessage();
+            message.AddString(messageContent); // Add the string to the message
 
+            try
+            {
+                message.WriteTo(socket); // Write the message to the socket
+            }
+            catch (SocketException ex)
+            {
+                Debug.WriteLine($"Socket exception: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception: {ex.Message}");
+            }
+        }
+
+        public void ReceiveMessage(Socket socket)
+        {
+            NetworkMessage message = new NetworkMessage();
+
+            try
+            {
+                if (message.ReadFrom(socket))
+                {
+                    // Process the message
+                    string receivedContent = message.ReadString();
+                    Debug.WriteLine($"Received: {receivedContent}");
+                }
+            }
+            catch (SocketException ex)
+            {
+                Debug.WriteLine($"Socket exception: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception: {ex.Message}");
+            }
+        }
 
 
         public NetworkMessage(bool raw = false)
@@ -75,7 +120,7 @@ namespace CTC
             {
                 throw new InvalidOperationException("Buffer size exceeded.");
             }
-
+            Debug.WriteLine("SetData (length)",length);
             // Copy the data into the NetworkMessage's buffer
             Array.Copy(data, 0, Data, 0, length);
             Size = length; // Update the size of the data
