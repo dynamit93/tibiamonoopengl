@@ -14,6 +14,8 @@ using Org.BouncyCastle.Crypto;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 
 
 namespace tibiamonoopengl
@@ -31,8 +33,7 @@ namespace tibiamonoopengl
         public Game1()
         {
             Graphics = new GraphicsDeviceManager(this);
-            //Content.RootDirectory = "Content";
-            //IsMouseVisible = true;
+            IsMouseVisible = true;
             Graphics.PreparingDeviceSettings += PrepareDevice;
             Graphics.PreferredBackBufferWidth = 1280;
             Graphics.PreferredBackBufferHeight = 800;
@@ -76,9 +77,8 @@ namespace tibiamonoopengl
             Desktop.NeedsLayout = true;
 
             // Connect to a Tibia server
-            string serverAddress = "192.168.1.107";
-            int serverPort = 7171; // Replace with the actual server port
-
+            string serverAddress = "127.0.0.1";
+            int serverPort = 1300; // Replace with the actual server port
             // Log: Resolving DNS
             Debug.WriteLine($"Resolving DNS for server: {serverAddress}");
 
@@ -88,12 +88,13 @@ namespace tibiamonoopengl
 
 
 
-            ConnectToServer(serverAddress, 7171);
+            ConnectToServer(serverAddress, serverPort);
 
 
         }
 
 
+        //private SslStream sslStream; // Add this field to your class
 
         private async void ConnectToServer(string serverAddress, int port)
         {
@@ -102,21 +103,30 @@ namespace tibiamonoopengl
             {
                 await tcpClient.ConnectAsync(serverAddress, port);
                 networkStream = tcpClient.GetStream();
+                //sslStream = new SslStream(networkStream, false, new RemoteCertificateValidationCallback(ValidateServerCertificate), null);
 
-                // Prepare the initial message
+                // Authenticate as the client
+                //sslStream.AuthenticateAsClient("ServerName");
+
+                // Now use sslStream for all subsequent read/write operations
+                // Example: Sending initial message
+                string authToken = "ExpectedAuthToken";
+                byte[] authBytes = Encoding.UTF8.GetBytes(authToken);
+                await networkStream.WriteAsync(authBytes, 0, authBytes.Length);
+
+
                 byte[] initialMessage = PrepareInitialMessage();
-                Debug.WriteLine(initialMessage);
-                // Send the initial message
+                //await sslStream.WriteAsync(initialMessage, 0, initialMessage.Length);
                 await networkStream.WriteAsync(initialMessage, 0, initialMessage.Length);
 
-                // Start listening to the server
-                //StartReceivingData();
+
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error connecting to server: {ex.Message}");
             }
         }
+
         //skip first, second \0
         private byte[] PrepareInitialMessage()
         {
@@ -140,7 +150,12 @@ namespace tibiamonoopengl
         }
 
 
-
+        private static bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            // For testing purposes, accept any certificate
+            // In production, check sslPolicyErrors and validate the certificate
+            return true;
+        }
 
 
 
@@ -236,6 +251,8 @@ namespace tibiamonoopengl
             if (tcpClient != null)
                 tcpClient.Close();
         }
+
+
 
         protected void PrepareDevice(object sender, PreparingDeviceSettingsEventArgs e)
         {
