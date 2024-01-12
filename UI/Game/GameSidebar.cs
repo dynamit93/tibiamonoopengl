@@ -210,6 +210,10 @@ namespace CTC
             MenuView.AddSubview(MenuToggle);
 
             AddSubview(MenuView);
+
+
+
+
         }
     }
 }

@@ -16,6 +16,12 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using ImGuiNET;
+//using tibiamonoopengl.UI.Framework;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
+using tibiamonoopengl.UI.Framework;
+
+
 
 
 namespace tibiamonoopengl
@@ -23,12 +29,20 @@ namespace tibiamonoopengl
     public class Game1 : Game
     {
         private GraphicsDeviceManager Graphics;
-        private SpriteBatch _spriteBatch;
+        private SpriteBatch spriteBatch;
         private GameDesktop Desktop;
         private MouseState LastMouseState;
         private TcpClient tcpClient;
         private NetworkStream networkStream;
         private RsaDecryptor rsaDecryptor;
+        private LoginWindow loginWindow;
+        private NetworkManager networkManager;
+        private Texture2D backgroundTexture;
+        private TextInputField usernameField;
+        private TextInputField passwordField;
+
+
+
 
         public Game1()
         {
@@ -38,14 +52,18 @@ namespace tibiamonoopengl
             Graphics.PreferredBackBufferWidth = 1280;
             Graphics.PreferredBackBufferHeight = 800;
             Content.RootDirectory = "Content";
+            
         }
-
+        
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
 
-            base.Initialize();
+            networkManager = new NetworkManager();
+            Debug.WriteLine("NetworkManager initialized in Initialize");
             // Setup the window
+            //loginWindow = new LoginWindow();
+
             IsFixedTimeStep = false;
             Graphics.SynchronizeWithVerticalRetrace = false;
             //graphics.GraphicsDevice.PresentationParameters.PresentationInterval = PresentInterval.One;
@@ -54,6 +72,7 @@ namespace tibiamonoopengl
             Window.AllowUserResizing = true;
 
             Graphics.ApplyChanges();
+            base.Initialize();
         }
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
@@ -61,16 +80,24 @@ namespace tibiamonoopengl
         /// </summary>
         protected override void LoadContent()
         {
+            
+            spriteBatch = new SpriteBatch(GraphicsDevice);
+            //loginWindow = new LoginWindow();
+            backgroundTexture = Content.Load<Texture2D>("loginscreenbackground");
+            //loginWindow = new LoginWindow(backgroundTexture);
+            loginWindow = new LoginWindow(backgroundTexture, spriteBatch, GraphicsDevice);
             UIContext.Initialize(Window, Graphics, Content);
             UIContext.Load();
 
 
             rsaDecryptor = new RsaDecryptor("C:\\Users\\dennis\\source\\repos\\tibiamonoopengl\\Rsa\\key.pem");
+
             
 
 
-
+            //loginWindow = new LoginWindow();
             Desktop = new GameDesktop();
+            //Desktop.AddSubview(loginWindow);
             Desktop.Load();
             Desktop.CreatePanels();
             Desktop.LayoutSubviews();
@@ -88,124 +115,33 @@ namespace tibiamonoopengl
 
 
 
-            ConnectToServer(serverAddress, serverPort);
-
-
-        }
-
-
-        //private SslStream sslStream; // Add this field to your class
-
-        private async void ConnectToServer(string serverAddress, int port)
-        {
-            tcpClient = new TcpClient();
-            try
+            if (networkManager == null)
             {
-                await tcpClient.ConnectAsync(serverAddress, port);
-                networkStream = tcpClient.GetStream();
-                //sslStream = new SslStream(networkStream, false, new RemoteCertificateValidationCallback(ValidateServerCertificate), null);
-
-                // Authenticate as the client
-                //sslStream.AuthenticateAsClient("ServerName");
-
-                // Now use sslStream for all subsequent read/write operations
-                // Example: Sending initial message
-                string authToken = "ExpectedAuthToken";
-                byte[] authBytes = Encoding.UTF8.GetBytes(authToken);
-                await networkStream.WriteAsync(authBytes, 0, authBytes.Length);
-
-
-                byte[] initialMessage = PrepareInitialMessage();
-                //await sslStream.WriteAsync(initialMessage, 0, initialMessage.Length);
-                await networkStream.WriteAsync(initialMessage, 0, initialMessage.Length);
-
-
+                Debug.WriteLine("NetworkManager is null in LoadContent");
             }
-            catch (Exception ex)
+            else
             {
-                Debug.WriteLine($"Error connecting to server: {ex.Message}");
-            }
-        }
-
-        //skip first, second \0
-        private byte[] PrepareInitialMessage()
-        {
-            // Assuming msg.buffer is a byte array
-            byte[] msgBuffer = new byte[] { 0x00, 0x00 }; // Example byte array with values 10 and 27
-
-            // Combine the two bytes into a ushort
-            // The first byte (msgBuffer[0]) is the high-order byte, and the second byte (msgBuffer[1]) is the low-order byte
-            ushort protocolVersion = (ushort)((msgBuffer[0] << 8) | msgBuffer[1]);
-
-            // Convert ushort to byte array
-            byte[] message = BitConverter.GetBytes(protocolVersion);
-
-            // If BitConverter.IsLittleEndian is true, reverse the array to get Big Endian format
-            if (BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(message);
+                Debug.WriteLine("NetworkManager is not null in LoadContent");
+                networkManager.ConnectToServer(serverAddress, serverPort);
             }
 
-            return message;
-        }
 
 
-        private static bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
-        {
-            // For testing purposes, accept any certificate
-            // In production, check sslPolicyErrors and validate the certificate
-            return true;
         }
 
 
 
-        private async void StartReceivingData(GameTime gameTime) // Pass GameTime from the game loop
-        {
-            try
-            {
-                TibiaNetworkStream tibiaNetworkStream = new TibiaNetworkStream(networkStream);
-
-                while (tcpClient.Connected)
-                {
-                    NetworkMessage message = tibiaNetworkStream.Read(gameTime); // Pass the gameTime instance
-                    if (message != null)
-                    {
-                        // Process received data
-                        ProcessReceivedData(message.GetData(), message.GetSize());
-                    }
-                    Debug.WriteLine($"Received data: {message?.GetSize() ?? 0}");
-                    await Task.Delay(1000);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error receiving data: {ex.Message}");
-            }
-        }
-
-
-
-        private void ProcessReceivedData(byte[] data, int bytesRead)
-        {
-            // Convert the received data to a readable format
-            // If the data is expected to be a UTF-8 string:
-            string receivedString = Encoding.UTF8.GetString(data, 0, bytesRead);
-
-            // Log the received data
-            Debug.WriteLine($"Received string: {receivedString}");
-
-            // If you have decryption and further processing:
-            // byte[] decryptedData = rsaDecryptor.Decrypt(data, bytesRead);
-            // ParseProtocolData(decryptedData);
-        }
 
 
         protected override void Update(GameTime gameTime)
         {
             MouseState mouse = Mouse.GetState();
+            
 
-            StartReceivingData(gameTime);
-            // Do input handling
+            networkManager.StartReceivingData(gameTime);
+
+
+            //loginWindow.Update(gameTime);
 
             // First check left mouse button
             if (LastMouseState != null)
@@ -230,15 +166,22 @@ namespace tibiamonoopengl
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
+            // Draw login window
+            loginWindow.Draw();
 
-            try
-            {
-                Desktop.Draw(null, Window.ClientBounds);
-            }
-            catch (Exception e)
-            {
-                throw;
-            }
+
+ 
+
+            //// add game screen in login window
+            //try
+            //{
+            //    Desktop.Draw(null, Window.ClientBounds);
+            //}
+            //catch (Exception e)
+            //{
+            //    throw;
+            //}
+
 
             base.Draw(gameTime);
         }

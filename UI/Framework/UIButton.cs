@@ -10,6 +10,8 @@ namespace CTC
 {
     public class UIButton : UIView
     {
+
+
         /// <summary>
         /// The button type that will be used when the button ain't do anything.
         /// </summary>
@@ -68,6 +70,7 @@ namespace CTC
         public String Label;
 
         public delegate void ButtonPressedEvent(UIButton Button, MouseState mouse);
+
 
         public event ButtonPressedEvent ButtonPressed;
         public event ButtonPressedEvent ButtonDragged;
