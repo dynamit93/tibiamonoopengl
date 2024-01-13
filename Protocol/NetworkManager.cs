@@ -69,7 +69,7 @@ namespace tibiamonoopengl.Protocol
                     {
                         ProcessReceivedData(message.GetData(), message.GetSize());
                     }
-                    Debug.WriteLine($"Received data: {message?.GetSize() ?? 0}");
+                    //Debug.WriteLine($"Received data: {message?.GetSize() ?? 0}");
                     await Task.Delay(1000);
                 }
             }
@@ -126,7 +126,7 @@ namespace tibiamonoopengl.Protocol
                         // Process received data
                         ProcessReceivedData(message.GetData(), message.GetSize());
                     }
-                    Debug.WriteLine($"Received data: {message?.GetSize() ?? 0}");
+                    //Debug.WriteLine($"Received data: {message?.GetSize() ?? 0}");
                     await Task.Delay(1000);
                 }
             }
@@ -141,16 +141,31 @@ namespace tibiamonoopengl.Protocol
         private void ProcessReceivedData(byte[] data, int bytesRead)
         {
             // Convert the received data to a readable format
-            // If the data is expected to be a UTF-8 string:
             string receivedString = Encoding.UTF8.GetString(data, 0, bytesRead);
 
             // Log the received data
             Debug.WriteLine($"Received string: {receivedString}");
 
-            // If you have decryption and further processing:
-            // byte[] decryptedData = rsaDecryptor.Decrypt(data, bytesRead);
-            // ParseProtocolData(decryptedData);
+            // Split the received string into lines
+            string[] playerLines = receivedString.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+
+            foreach (string playerLine in playerLines)
+            {
+                if (!string.IsNullOrWhiteSpace(playerLine))
+                {
+                    // Process each line to extract player information
+                    // Example format: "Player: John, Level: 5, Balance: 1000"
+                    string[] playerDetails = playerLine.Split(',');
+                    foreach (string detail in playerDetails)
+                    {
+                        Debug.WriteLine(detail.Trim()); // Trim to remove leading/trailing whitespaces
+                    }
+                }
+            }
+
+            // Further processing as needed
         }
+
 
 
         public async Task SendLoginRequestAsync(string serverAddress, int port, string username, string password)

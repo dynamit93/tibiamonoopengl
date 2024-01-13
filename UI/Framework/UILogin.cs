@@ -164,8 +164,8 @@ namespace tibiamonoopengl.UI.Framework
             string password = passwordField.Text;
 
             // Server address and port
-            string serverAddresstemp = serverAddress; // Replace with your server's address
-            int serverPorttemp = serverPort; // Replace with your server's port number
+            string serverAddresstemp = serverAddress; 
+            int serverPorttemp = serverPort; 
 
             // Send login request
             try
