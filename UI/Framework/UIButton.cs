@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
@@ -85,7 +86,7 @@ namespace CTC
             NormalType = UIElementType.Button;
             HighlightType = UIElementType.ButtonHighlight;
 
-            Bounds = new Rectangle(0, 0, 32, 32);
+            Bounds = new Rectangle(520, 460, 100, 30);
         }
 
         public override bool MouseLeftClick(MouseState mouse)
@@ -135,19 +136,25 @@ namespace CTC
 
         protected override void DrawContent(SpriteBatch CurrentBatch)
         {
+
+            // Draw the button background
+            Color backgroundColor = Highlighted ? Color.Gray : Color.DarkGray; // Example colors
+            
+            Debug.WriteLine($"Bounds: {Bounds}");
+            CurrentBatch.Draw(UIContext.WhitePixel, Bounds, Color.Blue);
+
+
             if (Label != null)
             {
-                Vector2 Size = UIContext.StandardFont.MeasureString(Label);
-                Vector2 Offset = new Vector2(
-                    (int)((ClientBounds.Width - Size.X) / 2),
-                    (int)((ClientBounds.Height - Size.Y) / 2)
+                Vector2 labelSize = UIContext.StandardFont.MeasureString(Label);
+                Vector2 labelPosition = new Vector2(
+                    ClientBounds.X + (ClientBounds.Width - labelSize.X) / 2,
+                    ClientBounds.Y + (ClientBounds.Height - labelSize.Y) / 2
                 );
 
                 CurrentBatch.DrawString(
-                    UIContext.StandardFont, Label, ScreenCoordinate(Offset),
-                    Color.LightGray,
-                    0.0f, new Vector2(0.0f, 0.0f),
-                    1.0f, SpriteEffects.None, 0.5f
+                    UIContext.StandardFont, Label, labelPosition,
+                    Color.White
                 );
             }
         }

@@ -10,6 +10,10 @@ namespace CTC
 {
     public static class UIContext
     {
+
+        public static SpriteFont BoldFont;
+        public static Texture2D WhitePixel;
+
         /// <summary>
         /// The OS window of the game (as provided by XNA)
         /// </summary>
@@ -55,6 +59,13 @@ namespace CTC
 
         public static void Load()
         {
+
+            // Create a 1x1 white texture
+            WhitePixel = new Texture2D(Graphics.GraphicsDevice, 1, 1);
+            WhitePixel.SetData(new[] { Color.White });
+
+            StandardFont = Content.Load<SpriteFont>("StandardFont");
+            BoldFont = Content.Load<SpriteFont>("StandardFont");
             StandardFont = Content.Load<SpriteFont>("StandardFont");
             Skin = new UISkin();
             Skin.Load(null);

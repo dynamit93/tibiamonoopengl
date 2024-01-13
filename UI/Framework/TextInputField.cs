@@ -16,7 +16,10 @@ namespace tibiamonoopengl.UI.Framework
         private bool isSelected;
         private KeyboardState oldState;
         private Texture2D whitePixel;
-        private GraphicsDevice graphicsDevice;
+        private bool cursorVisible;
+        private double cursorBlinkTime;
+        private const double BlinkInterval = 0.5;
+
 
         public string Text => text.ToString();
         public Rectangle Bounds { get => bounds; set => bounds = value; }
@@ -29,9 +32,15 @@ namespace tibiamonoopengl.UI.Framework
             oldState = Keyboard.GetState();
         }
 
-        public void Update(GameTime gameTime)
+        public void SetFocus(bool focus)
         {
-            var newState = Keyboard.GetState();
+            isSelected = focus;
+        }
+
+        public void Update(GameTime gameTime, KeyboardState keyboardState)
+        {
+            var newState = keyboardState;
+
 
             if (isSelected)
             {
@@ -54,6 +63,20 @@ namespace tibiamonoopengl.UI.Framework
                     }
                 }
             }
+            if (isSelected)
+            {
+                cursorBlinkTime += gameTime.ElapsedGameTime.TotalSeconds;
+                if (cursorBlinkTime >= BlinkInterval)
+                {
+                    cursorVisible = !cursorVisible;
+                    cursorBlinkTime = 0;
+                }
+            }
+            else
+            {
+                cursorVisible = false;
+                cursorBlinkTime = 0;
+            }
 
             oldState = newState;
         }
@@ -70,20 +93,22 @@ namespace tibiamonoopengl.UI.Framework
             return '\0';
         }
 
-        public void SetFocus(bool focus)
-        {
-            isSelected = focus;
-        }
+
 
 
 
         public void Draw(SpriteBatch spriteBatch, SpriteFont font)
         {
             // Draw the text field border
-            spriteBatch.Draw(whitePixel, bounds, Color.White);
+            spriteBatch.Draw(whitePixel, bounds, Color.LightGray);
 
             // Draw the text
             spriteBatch.DrawString(font, text.ToString(), new Vector2(bounds.X + 5, bounds.Y + 5), Color.Black);
+            if (isSelected && cursorVisible)
+            {
+                Vector2 cursorPosition = new Vector2(bounds.X + 5 + font.MeasureString(text.ToString()).X, bounds.Y + 5);
+                spriteBatch.DrawString(font, "|", cursorPosition, Color.Black);
+            }
         }
 
 

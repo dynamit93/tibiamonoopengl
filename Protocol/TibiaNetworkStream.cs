@@ -17,10 +17,13 @@ namespace tibiamonoopengl.Protocol
         public TibiaNetworkStream(NetworkStream networkStream)
         {
             _networkStream = networkStream;
+
         }
 
         public bool Poll(GameTime time)
         {
+            if (_networkStream == null)
+                return false;
             // Implement polling logic for network data
             return _networkStream.DataAvailable;
         }

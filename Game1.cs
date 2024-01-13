@@ -80,12 +80,14 @@ namespace tibiamonoopengl
         /// </summary>
         protected override void LoadContent()
         {
-            
+            // Connect to a Tibia server
+            string serverAddress = "127.0.0.1";
+            int serverPort = 1300; // Replace with the actual server port
             spriteBatch = new SpriteBatch(GraphicsDevice);
             //loginWindow = new LoginWindow();
             backgroundTexture = Content.Load<Texture2D>("loginscreenbackground");
             //loginWindow = new LoginWindow(backgroundTexture);
-            loginWindow = new LoginWindow(backgroundTexture, spriteBatch, GraphicsDevice);
+            loginWindow = new LoginWindow(backgroundTexture, spriteBatch, GraphicsDevice, serverAddress, serverPort);
             UIContext.Initialize(Window, Graphics, Content);
             UIContext.Load();
 
@@ -103,9 +105,7 @@ namespace tibiamonoopengl
             Desktop.LayoutSubviews();
             Desktop.NeedsLayout = true;
 
-            // Connect to a Tibia server
-            string serverAddress = "127.0.0.1";
-            int serverPort = 1300; // Replace with the actual server port
+
             // Log: Resolving DNS
             Debug.WriteLine($"Resolving DNS for server: {serverAddress}");
 
@@ -122,7 +122,7 @@ namespace tibiamonoopengl
             else
             {
                 Debug.WriteLine("NetworkManager is not null in LoadContent");
-                networkManager.ConnectToServer(serverAddress, serverPort);
+                networkManager.ConnectToServerAsync(serverAddress, serverPort);
             }
 
 
@@ -140,7 +140,7 @@ namespace tibiamonoopengl
 
             networkManager.StartReceivingData(gameTime);
 
-
+            loginWindow.Update(gameTime);
             //loginWindow.Update(gameTime);
 
             // First check left mouse button

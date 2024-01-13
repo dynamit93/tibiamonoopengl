@@ -16,42 +16,72 @@ namespace tibiamonoopengl.Protocol
         private TcpClient tcpClient;
         private NetworkStream networkStream;
         //private RsaDecryptor rsaDecryptor;
+        public bool IsConnected { get; set; }
+        public event EventHandler<bool> ConnectionStatusChanged;
+
 
         public NetworkManager()
         {
+
             //rsaDecryptor = new RsaDecryptor("path/to/key.pem");
         }
 
-        public async void ConnectToServer(string serverAddress, int port)
+        public async Task ConnectToServerAsync(string serverAddress, int port)
         {
             tcpClient = new TcpClient();
             try
             {
                 await tcpClient.ConnectAsync(serverAddress, port);
                 networkStream = tcpClient.GetStream();
-                //sslStream = new SslStream(networkStream, false, new RemoteCertificateValidationCallback(ValidateServerCertificate), null);
+                IsConnected = true;
 
-                // Authenticate as the client
-                //sslStream.AuthenticateAsClient("ServerName");
+                OnConnectionStatusChanged(true);
 
-                // Now use sslStream for all subsequent read/write operations
-                // Example: Sending initial message
+                // Send the initial authentication token or any other setup data
                 string authToken = "ExpectedAuthToken";
                 byte[] authBytes = Encoding.UTF8.GetBytes(authToken);
                 await networkStream.WriteAsync(authBytes, 0, authBytes.Length);
-
-
-                byte[] initialMessage = PrepareInitialMessage();
-                //await sslStream.WriteAsync(initialMessage, 0, initialMessage.Length);
-                await networkStream.WriteAsync(initialMessage, 0, initialMessage.Length);
-
-
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error connecting to server: {ex.Message}");
+                IsConnected = false;
+                OnConnectionStatusChanged(false);
             }
         }
+
+        public async Task StartReceivingDataAsync(GameTime gameTime)
+        {
+            if (!IsConnected)
+            {
+                Debug.WriteLine("Cannot start receiving data: not connected to the server.");
+                return;
+            }
+
+            try
+            {
+                TibiaNetworkStream tibiaNetworkStream = new TibiaNetworkStream(networkStream);
+
+                while (IsConnected)
+                {
+                    NetworkMessage message = tibiaNetworkStream.Read(gameTime);
+                    if (message != null)
+                    {
+                        ProcessReceivedData(message.GetData(), message.GetSize());
+                    }
+                    Debug.WriteLine($"Received data: {message?.GetSize() ?? 0}");
+                    await Task.Delay(1000);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error receiving data: {ex.Message}");
+                IsConnected = false;
+                OnConnectionStatusChanged(false);
+            }
+        }
+
+
 
         private byte[] PrepareInitialMessage()
         {
@@ -123,22 +153,28 @@ namespace tibiamonoopengl.Protocol
         }
 
 
-        public async Task SendLoginRequest(string username, string password)
+        public async Task SendLoginRequestAsync(string serverAddress, int port, string username, string password)
         {
-            if (tcpClient == null || !tcpClient.Connected)
+            if (!IsConnected)
             {
-                throw new InvalidOperationException("Not connected to server.");
+                // If not connected, attempt to establish a new connection
+                await ConnectToServerAsync(serverAddress, port);
             }
 
-            // Example: creating a simple message string
-            string message = $"LOGIN {username} {password}";
+            if (IsConnected)
+            {
+                // Connected or reconnected successfully, proceed with login request
+                string message = $"LOGIN {username} {password}";
+                byte[] messageBytes = Encoding.UTF8.GetBytes(message);
 
-            // Convert the string message to a byte array
-            byte[] messageBytes = Encoding.UTF8.GetBytes(message);
-
-            // Send the message
-            await networkStream.WriteAsync(messageBytes, 0, messageBytes.Length);
+                await networkStream.WriteAsync(messageBytes, 0, messageBytes.Length);
+            }
+            else
+            {
+                throw new InvalidOperationException("Not connected to the server.");
+            }
         }
+
 
 
         public void Cleanup()
@@ -149,6 +185,10 @@ namespace tibiamonoopengl.Protocol
                 tcpClient.Close();
         }
 
+        protected virtual void OnConnectionStatusChanged(bool isConnected)
+        {
+            ConnectionStatusChanged?.Invoke(this, isConnected);
+        }
         // Other methods like ProcessReceivedData, etc.
     }
 }
