@@ -26,7 +26,9 @@ namespace tibiamonoopengl.Protocol
             //rsaDecryptor = new RsaDecryptor("path/to/key.pem");
         }
 
-        public async Task ConnectToServerAsync(string serverAddress, int port)
+
+
+        public async Task ConnectToServerAsync(string serverAddress, int port, GameTime gameTime)
         {
             tcpClient = new TcpClient();
             try
@@ -41,6 +43,9 @@ namespace tibiamonoopengl.Protocol
                 string authToken = "ExpectedAuthToken";
                 byte[] authBytes = Encoding.UTF8.GetBytes(authToken);
                 await networkStream.WriteAsync(authBytes, 0, authBytes.Length);
+
+                // Start receiving data
+                await StartReceivingDataAsync(gameTime);
             }
             catch (Exception ex)
             {
@@ -58,83 +63,43 @@ namespace tibiamonoopengl.Protocol
                 return;
             }
 
-            try
-            {
-                TibiaNetworkStream tibiaNetworkStream = new TibiaNetworkStream(networkStream);
+            TibiaNetworkStream tibiaNetworkStream = new TibiaNetworkStream(networkStream);
 
-                while (IsConnected)
+            while (IsConnected)
+            {
+                try
                 {
-                    NetworkMessage message = tibiaNetworkStream.Read(gameTime);
-                    if (message != null)
+                    if (networkStream.DataAvailable)
                     {
-                        ProcessReceivedData(message.GetData(), message.GetSize());
+                        NetworkMessage message = tibiaNetworkStream.Read(gameTime);
+                        if (message != null)
+                        {
+                            ProcessReceivedData(message.GetData(), message.GetSize());
+                        }
                     }
-                    //Debug.WriteLine($"Received data: {message?.GetSize() ?? 0}");
-                    await Task.Delay(1000);
+                    else
+                    {
+                        Debug.WriteLine("No data available to read.");
+                    }
+                    await Task.Delay(100); // Reduced delay
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Exception in data receiving loop: {ex.Message}");
+                    if (ex.Message.Contains("Connection closed"))
+                    {
+                        Debug.WriteLine("Connection to server lost.");
+                        IsConnected = false;
+                        OnConnectionStatusChanged(false);
+                        break;
+                    }
                 }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error receiving data: {ex.Message}");
-                IsConnected = false;
-                OnConnectionStatusChanged(false);
-            }
         }
 
 
 
-        private byte[] PrepareInitialMessage()
-        {
-            // Assuming msg.buffer is a byte array
-            byte[] msgBuffer = new byte[] { 0x00, 0x00 }; // Example byte array with values 10 and 27
 
-            // Combine the two bytes into a ushort
-            // The first byte (msgBuffer[0]) is the high-order byte, and the second byte (msgBuffer[1]) is the low-order byte
-            ushort protocolVersion = (ushort)((msgBuffer[0] << 8) | msgBuffer[1]);
-
-            // Convert ushort to byte array
-            byte[] message = BitConverter.GetBytes(protocolVersion);
-
-            // If BitConverter.IsLittleEndian is true, reverse the array to get Big Endian format
-            if (BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(message);
-            }
-
-            return message;
-        }
-
-        public async void StartReceivingData(GameTime gameTime) // Pass GameTime from the game loop
-        {
-
-            if (tcpClient == null || !tcpClient.Connected)
-            {
-                Debug.WriteLine("Cannot start receiving data: tcpClient is not connected.");
-                return;
-            }
-
-
-            try
-            {
-                TibiaNetworkStream tibiaNetworkStream = new TibiaNetworkStream(networkStream);
-
-                while (tcpClient.Connected)
-                {
-                    NetworkMessage message = tibiaNetworkStream.Read(gameTime); // Pass the gameTime instance
-                    if (message != null)
-                    {
-                        // Process received data
-                        ProcessReceivedData(message.GetData(), message.GetSize());
-                    }
-                    //Debug.WriteLine($"Received data: {message?.GetSize() ?? 0}");
-                    await Task.Delay(1000);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error receiving data: {ex.Message}");
-            }
-        }
 
 
 
@@ -168,12 +133,12 @@ namespace tibiamonoopengl.Protocol
 
 
 
-        public async Task SendLoginRequestAsync(string serverAddress, int port, string username, string password)
+        public async Task SendLoginRequestAsync(string serverAddress, int port, string username, string password, GameTime gameTime)
         {
             if (!IsConnected)
             {
                 // If not connected, attempt to establish a new connection
-                await ConnectToServerAsync(serverAddress, port);
+                await ConnectToServerAsync(serverAddress, port, gameTime);
             }
 
             if (IsConnected)

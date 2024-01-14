@@ -22,6 +22,7 @@ namespace tibiamonoopengl.UI.Framework
         private string serverAddress;
         private int serverPort;
         private NetworkManager networkManager;
+        private GameTime currentGameTime;
 
 
 
@@ -62,7 +63,7 @@ namespace tibiamonoopengl.UI.Framework
         public void Update(GameTime gameTime)
         {
             MouseState mouseState = Mouse.GetState();
-
+            currentGameTime = gameTime;
             // Check if the user clicked on the usernameField
             if (mouseState.LeftButton == ButtonState.Pressed)
             {
@@ -170,7 +171,7 @@ namespace tibiamonoopengl.UI.Framework
             // Send login request
             try
             {
-                await networkManager.SendLoginRequestAsync(serverAddresstemp, serverPorttemp, username, password);
+                await networkManager.SendLoginRequestAsync(serverAddresstemp, serverPorttemp, username, password, currentGameTime);
                 Debug.WriteLine("Login request sent.");
             }
             catch (Exception ex)

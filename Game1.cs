@@ -40,8 +40,11 @@ namespace tibiamonoopengl
         private Texture2D backgroundTexture;
         private TextInputField usernameField;
         private TextInputField passwordField;
+        private bool isNetworkInitialized = false;
 
-
+        // Connect to the server
+        public string serverAddress = "127.0.0.1";
+        public int serverPort = 1300; // Replace with the actual server port
 
 
         public Game1()
@@ -59,7 +62,7 @@ namespace tibiamonoopengl
         {
             // TODO: Add your initialization logic here
 
-            networkManager = new NetworkManager();
+            //networkManager = new NetworkManager();
             Debug.WriteLine("NetworkManager initialized in Initialize");
             // Setup the window
             //loginWindow = new LoginWindow();
@@ -80,9 +83,7 @@ namespace tibiamonoopengl
         /// </summary>
         protected override void LoadContent()
         {
-            // Connect to a Tibia server
-            string serverAddress = "127.0.0.1";
-            int serverPort = 1300; // Replace with the actual server port
+
             spriteBatch = new SpriteBatch(GraphicsDevice);
             //loginWindow = new LoginWindow();
             backgroundTexture = Content.Load<Texture2D>("loginscreenbackground");
@@ -94,7 +95,7 @@ namespace tibiamonoopengl
 
             rsaDecryptor = new RsaDecryptor("C:\\Users\\dennis\\source\\repos\\tibiamonoopengl\\Rsa\\key.pem");
 
-            
+            networkManager = new NetworkManager();
 
 
             //loginWindow = new LoginWindow();
@@ -115,15 +116,15 @@ namespace tibiamonoopengl
 
 
 
-            if (networkManager == null)
-            {
-                Debug.WriteLine("NetworkManager is null in LoadContent");
-            }
-            else
-            {
-                Debug.WriteLine("NetworkManager is not null in LoadContent");
-                networkManager.ConnectToServerAsync(serverAddress, serverPort);
-            }
+            //if (networkManager == null)
+            //{
+            //    Debug.WriteLine("NetworkManager is null in LoadContent");
+            //}
+            //else
+            //{
+            //    Debug.WriteLine("NetworkManager is not null in LoadContent");
+            //    networkManager.ConnectToServerAsync(serverAddress, serverPort);
+            //}
 
 
 
@@ -136,32 +137,49 @@ namespace tibiamonoopengl
         protected override void Update(GameTime gameTime)
         {
             MouseState mouse = Mouse.GetState();
-            
 
-            networkManager.StartReceivingData(gameTime);
+            //if (!isNetworkInitialized && networkManager != null)
+            //{
+            //    networkManager.ConnectToServerAsync(serverAddress, serverPort, gameTime).Wait();
+            //    isNetworkInitialized = true;
 
-            loginWindow.Update(gameTime);
-            //loginWindow.Update(gameTime);
+            //    // Start receiving data in a background task
+            //    Task.Run(() => networkManager.ConnectToServerAsync(serverAddress, serverPort, gameTime));
+            //}
+            networkManager = new NetworkManager();
 
-            // First check left mouse button
-            if (LastMouseState != null)
+            // Start the network data reception in a separate task without blocking
+            Task.Run(async () => await networkManager.ConnectToServerAsync(serverAddress, serverPort, gameTime));
+
+
+            if (loginWindow != null)
             {
-                if (LastMouseState.LeftButton != mouse.LeftButton)
-                    Desktop.MouseLeftClick(mouse);
+                loginWindow.Update(gameTime);
             }
 
-            // Send the mouse moved event
-            if (LastMouseState.X != mouse.X || LastMouseState.Y != mouse.Y)
-                Desktop.MouseMove(mouse);
+            if (Desktop != null)
+            {
+                // First check left mouse button
+                if (LastMouseState != null)
+                {
+                    if (LastMouseState.LeftButton != mouse.LeftButton)
+                        Desktop.MouseLeftClick(mouse);
+                }
 
-            // Save the state for next frame so we can see what changed
-            LastMouseState = mouse;
+                // Send the mouse moved event
+                if (LastMouseState.X != mouse.X || LastMouseState.Y != mouse.Y)
+                    Desktop.MouseMove(mouse);
 
-            // Update the game state
-            Desktop.Update(gameTime);
+                // Save the state for next frame so we can see what changed
+                LastMouseState = mouse;
+
+                // Update the game state
+                Desktop.Update(gameTime);
+            }
 
             base.Update(gameTime);
         }
+
 
         protected override void Draw(GameTime gameTime)
         {

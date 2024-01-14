@@ -33,9 +33,18 @@ namespace tibiamonoopengl.Protocol
             if (_networkStream.DataAvailable)
             {
                 byte[] sizeBuffer = new byte[2]; // Buffer for the size (2 bytes)
-                int bytesRead = _networkStream.Read(sizeBuffer, 0, sizeBuffer.Length);
-                if (bytesRead != sizeBuffer.Length)
-                    throw new Exception("Failed to read the size of the message.");
+                int totalBytesRead = 0;
+
+                // Read the size of the message
+                while (totalBytesRead < sizeBuffer.Length)
+                {
+                    int bytesRead = _networkStream.Read(sizeBuffer, totalBytesRead, sizeBuffer.Length - totalBytesRead);
+                    if (bytesRead == 0)
+                    {
+                        throw new Exception("Connection closed while reading message size.");
+                    }
+                    totalBytesRead += bytesRead;
+                }
 
                 // Convert the size to an integer
                 ushort dataSize = BitConverter.ToUInt16(sizeBuffer, 0);
@@ -43,16 +52,43 @@ namespace tibiamonoopengl.Protocol
                     Array.Reverse(sizeBuffer); // Convert from big-endian to little-endian if needed
 
                 byte[] dataBuffer = new byte[dataSize];
-                bytesRead = _networkStream.Read(dataBuffer, 0, dataSize);
-                if (bytesRead != dataSize)
-                    throw new Exception("Failed to read the full message.");
+                totalBytesRead = 0;
+
+                // Read the message data
+                while (totalBytesRead < dataSize)
+                {
+                    int bytesRead = _networkStream.Read(dataBuffer, totalBytesRead, dataSize - totalBytesRead);
+                    if (bytesRead == 0)
+                    {
+                        if (_networkStream.Socket.Poll(1, SelectMode.SelectRead) && _networkStream.Socket.Available == 0)
+                        {
+                            // Connection has been closed gracefully
+                            Debug.WriteLine("Connection closed gracefully by the server.");
+                            break;
+                        }
+                        else
+                        {
+                            // Connection has been closed unexpectedly
+                            throw new Exception("Connection closed unexpectedly while reading message data.");
+                        }
+                    }
+
+                    totalBytesRead += bytesRead;
+                    // Print the total bytes read
+                    Debug.WriteLine($"Total bytes read: {totalBytesRead}");
+                }
+
+                // Print the total bytes read
+                Debug.WriteLine($"Total bytes read: {totalBytesRead}");
 
                 NetworkMessage message = new NetworkMessage();
-                message.SetData(dataBuffer, bytesRead);
+                message.SetData(dataBuffer, totalBytesRead);
                 return message;
             }
             return null; // Return null if no data is available
         }
+
+
 
 
 
