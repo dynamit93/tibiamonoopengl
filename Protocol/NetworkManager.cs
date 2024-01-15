@@ -9,6 +9,7 @@ using tibiamonoopengl.Protocol;
 using tibiamonoopengl.Rsa;
 using Microsoft.Xna.Framework;
 using CTC;
+using tibiamonoopengl.UI.Framework;
 namespace tibiamonoopengl.Protocol
 {
     public class NetworkManager
@@ -18,33 +19,37 @@ namespace tibiamonoopengl.Protocol
         //private RsaDecryptor rsaDecryptor;
         public bool IsConnected { get; set; }
         public event EventHandler<bool> ConnectionStatusChanged;
+        private LoginWindow loginWindow;
 
 
-        public NetworkManager()
+        public NetworkManager(LoginWindow loginWindow)
         {
+            this.loginWindow = loginWindow;
 
             //rsaDecryptor = new RsaDecryptor("path/to/key.pem");
         }
 
-
+        private bool isConnecting = false;
 
         public async Task ConnectToServerAsync(string serverAddress, int port, GameTime gameTime)
         {
+            if (isConnecting) return;
+
+            isConnecting = true;
             tcpClient = new TcpClient();
             try
             {
                 await tcpClient.ConnectAsync(serverAddress, port);
-                networkStream = tcpClient.GetStream();
-                IsConnected = true;
+                    networkStream = tcpClient.GetStream();
+                    IsConnected = true;
+                    OnConnectionStatusChanged(true);
 
-                OnConnectionStatusChanged(true);
+                    // Send the initial authentication token or any other setup data
+                    string authToken = "ExpectedAuthToken";
+                    byte[] authBytes = Encoding.UTF8.GetBytes(authToken);
+                    await networkStream.WriteAsync(authBytes, 0, authBytes.Length);
 
-                // Send the initial authentication token or any other setup data
-                string authToken = "ExpectedAuthToken";
-                byte[] authBytes = Encoding.UTF8.GetBytes(authToken);
-                await networkStream.WriteAsync(authBytes, 0, authBytes.Length);
-
-                // Start receiving data
+                // Start receiving data in a separate task
                 await StartReceivingDataAsync(gameTime);
             }
             catch (Exception ex)
@@ -52,6 +57,10 @@ namespace tibiamonoopengl.Protocol
                 Debug.WriteLine($"Error connecting to server: {ex.Message}");
                 IsConnected = false;
                 OnConnectionStatusChanged(false);
+            }
+            finally
+            {
+                isConnecting = false;
             }
         }
 
@@ -105,29 +114,30 @@ namespace tibiamonoopengl.Protocol
 
         private void ProcessReceivedData(byte[] data, int bytesRead)
         {
-            // Convert the received data to a readable format
             string receivedString = Encoding.UTF8.GetString(data, 0, bytesRead);
-
-            // Log the received data
             Debug.WriteLine($"Received string: {receivedString}");
+
+            
 
             // Split the received string into lines
             string[] playerLines = receivedString.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-
-            foreach (string playerLine in playerLines)
-            {
-                if (!string.IsNullOrWhiteSpace(playerLine))
+            if (playerLines != null ) {
+                loginWindow.UpdateUIAfterLogin();
+            
+                foreach (string playerLine in playerLines)
                 {
-                    // Process each line to extract player information
-                    // Example format: "Player: John, Level: 5, Balance: 1000"
-                    string[] playerDetails = playerLine.Split(',');
-                    foreach (string detail in playerDetails)
+                    if (!string.IsNullOrWhiteSpace(playerLine))
                     {
-                        Debug.WriteLine(detail.Trim()); // Trim to remove leading/trailing whitespaces
+                        // Process each line to extract player information
+                        // Example format: "Player: John, Level: 5, Balance: 1000"
+                        string[] playerDetails = playerLine.Split(',');
+                        foreach (string detail in playerDetails)
+                        {
+                            Debug.WriteLine(detail.Trim()); // Trim to remove leading/trailing whitespaces
+                        }
                     }
                 }
             }
-
             // Further processing as needed
         }
 
@@ -135,11 +145,11 @@ namespace tibiamonoopengl.Protocol
 
         public async Task SendLoginRequestAsync(string serverAddress, int port, string username, string password, GameTime gameTime)
         {
-            if (!IsConnected)
-            {
-                // If not connected, attempt to establish a new connection
-                await ConnectToServerAsync(serverAddress, port, gameTime);
-            }
+            //if (!IsConnected)
+            //{
+            //    // If not connected, attempt to establish a new connection
+            //    await ConnectToServerAsync(serverAddress, port, gameTime);
+            //}
 
             if (IsConnected)
             {

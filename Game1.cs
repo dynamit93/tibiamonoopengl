@@ -20,6 +20,7 @@ using ImGuiNET;
 //using tibiamonoopengl.UI.Framework;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
 using tibiamonoopengl.UI.Framework;
+using System.Collections.Generic;
 
 
 
@@ -41,7 +42,7 @@ namespace tibiamonoopengl
         private TextInputField usernameField;
         private TextInputField passwordField;
         private bool isNetworkInitialized = false;
-
+        
         // Connect to the server
         public string serverAddress = "127.0.0.1";
         public int serverPort = 1300; // Replace with the actual server port
@@ -95,7 +96,7 @@ namespace tibiamonoopengl
 
             rsaDecryptor = new RsaDecryptor("C:\\Users\\dennis\\source\\repos\\tibiamonoopengl\\Rsa\\key.pem");
 
-            networkManager = new NetworkManager();
+            //networkManager = new NetworkManager();
 
 
             //loginWindow = new LoginWindow();
@@ -146,10 +147,10 @@ namespace tibiamonoopengl
             //    // Start receiving data in a background task
             //    Task.Run(() => networkManager.ConnectToServerAsync(serverAddress, serverPort, gameTime));
             //}
-            networkManager = new NetworkManager();
+           // networkManager = new NetworkManager();
 
             // Start the network data reception in a separate task without blocking
-            Task.Run(async () => await networkManager.ConnectToServerAsync(serverAddress, serverPort, gameTime));
+            //Task.Run(async () => await networkManager.ConnectToServerAsync(serverAddress, serverPort, gameTime));
 
 
             if (loginWindow != null)
@@ -188,7 +189,7 @@ namespace tibiamonoopengl
             loginWindow.Draw();
 
 
- 
+
 
             //// add game screen in login window
             //try

@@ -7,6 +7,7 @@ using System.Diagnostics;
 using tibiamonoopengl.Protocol;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace tibiamonoopengl.UI.Framework
 {
@@ -23,7 +24,7 @@ namespace tibiamonoopengl.UI.Framework
         private int serverPort;
         private NetworkManager networkManager;
         private GameTime currentGameTime;
-
+        private bool showLoginUI = true;
 
 
 
@@ -50,7 +51,7 @@ namespace tibiamonoopengl.UI.Framework
 
             this.serverAddress = serverAddress;
             this.serverPort = serverPort;
-            this.networkManager = new NetworkManager();
+            networkManager = new NetworkManager(this);
 
             // Subscribe to the ConnectionStatusChanged event of NetworkManager
             //networkManager.ConnectionStatusChanged += NetworkManager_ConnectionStatusChanged;
@@ -64,23 +65,26 @@ namespace tibiamonoopengl.UI.Framework
         {
             MouseState mouseState = Mouse.GetState();
             currentGameTime = gameTime;
-            // Check if the user clicked on the usernameField
-            if (mouseState.LeftButton == ButtonState.Pressed)
+            if (showLoginUI)
             {
-                if (usernameField.Bounds.Contains(mouseState.Position))
+                // Check if the user clicked on the usernameField
+                if (mouseState.LeftButton == ButtonState.Pressed)
                 {
-                    usernameField.SetFocus(true);
-                    passwordField.SetFocus(false);
-                }
-                else if (passwordField.Bounds.Contains(mouseState.Position))
-                {
-                    passwordField.SetFocus(true);
-                    usernameField.SetFocus(false);
-                }
-                else
-                {
-                    usernameField.SetFocus(false);
-                    passwordField.SetFocus(false);
+                    if (usernameField.Bounds.Contains(mouseState.Position))
+                    {
+                        usernameField.SetFocus(true);
+                        passwordField.SetFocus(false);
+                    }
+                    else if (passwordField.Bounds.Contains(mouseState.Position))
+                    {
+                        passwordField.SetFocus(true);
+                        usernameField.SetFocus(false);
+                    }
+                    else
+                    {
+                        usernameField.SetFocus(false);
+                        passwordField.SetFocus(false);
+                    }
                 }
             }
 
@@ -97,47 +101,48 @@ namespace tibiamonoopengl.UI.Framework
 
             // Draw background
             spriteBatch.Draw(backgroundTexture, new Rectangle(0, 0, graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height), Color.White);
-
-            // Draw the label for the username field using the bold font
-            string usernameLabel = "Username:";
-            string PasswordLabel = "Password:";
-            Vector2 labelPosition = new Vector2(usernameField.Bounds.X, usernameField.Bounds.Y - 30); // Position above the field
-            spriteBatch.DrawString(UIContext.BoldFont, usernameLabel, labelPosition, Color.LightGray);
-
-            Vector2 PasswordLabelPosition = new Vector2(passwordField.Bounds.X, passwordField.Bounds.Y - 30); // Position above the field
-            spriteBatch.DrawString(UIContext.BoldFont, PasswordLabel, PasswordLabelPosition, Color.LightGray);
-
-            // Draw text fields
-            usernameField.Draw(spriteBatch, UIContext.StandardFont);
-            passwordField.Draw(spriteBatch, UIContext.StandardFont);
-
-            // Draw custom button
-            Rectangle buttonBounds = new Rectangle(520, 460, 100, 30); // Button position and size
-
-            // Check if the mouse is inside the button bounds
-            MouseState mouseState = Mouse.GetState();
-            bool isMouseOverButton = buttonBounds.Contains(mouseState.Position);
-
-            // Change the button color based on mouse hover
-            Color buttonColor = isMouseOverButton ? Color.LightGreen : Color.Green;
-
-            spriteBatch.Draw(whitePixel, buttonBounds, buttonColor); // Draw button background
-
-            string buttonText = "Login";
-            Vector2 buttonTextSize = UIContext.StandardFont.MeasureString(buttonText);
-            Vector2 buttonTextPosition = new Vector2(
-                buttonBounds.X + (buttonBounds.Width - buttonTextSize.X) / 2,
-                buttonBounds.Y + (buttonBounds.Height - buttonTextSize.Y) / 2
-            );
-            spriteBatch.DrawString(UIContext.StandardFont, buttonText, buttonTextPosition, Color.White); // Draw button text
-
-            // Check for a mouse click on the button
-            if (isMouseOverButton && mouseState.LeftButton == ButtonState.Pressed)
+            if (showLoginUI)
             {
-                // Trigger the login action here
-                OnLoginButtonClick();
-            }
+                // Draw the label for the username field using the bold font
+                string usernameLabel = "Username:";
+                string PasswordLabel = "Password:";
+                Vector2 labelPosition = new Vector2(usernameField.Bounds.X, usernameField.Bounds.Y - 30); // Position above the field
+                spriteBatch.DrawString(UIContext.BoldFont, usernameLabel, labelPosition, Color.LightGray);
 
+                Vector2 PasswordLabelPosition = new Vector2(passwordField.Bounds.X, passwordField.Bounds.Y - 30); // Position above the field
+                spriteBatch.DrawString(UIContext.BoldFont, PasswordLabel, PasswordLabelPosition, Color.LightGray);
+
+                // Draw text fields
+                usernameField.Draw(spriteBatch, UIContext.StandardFont);
+                passwordField.Draw(spriteBatch, UIContext.StandardFont);
+
+                // Draw custom button
+                Rectangle buttonBounds = new Rectangle(520, 460, 100, 30); // Button position and size
+
+                // Check if the mouse is inside the button bounds
+                MouseState mouseState = Mouse.GetState();
+                bool isMouseOverButton = buttonBounds.Contains(mouseState.Position);
+
+                // Change the button color based on mouse hover
+                Color buttonColor = isMouseOverButton ? Color.LightGreen : Color.Green;
+
+                spriteBatch.Draw(whitePixel, buttonBounds, buttonColor); // Draw button background
+
+                string buttonText = "Login";
+                Vector2 buttonTextSize = UIContext.StandardFont.MeasureString(buttonText);
+                Vector2 buttonTextPosition = new Vector2(
+                    buttonBounds.X + (buttonBounds.Width - buttonTextSize.X) / 2,
+                    buttonBounds.Y + (buttonBounds.Height - buttonTextSize.Y) / 2
+                );
+                spriteBatch.DrawString(UIContext.StandardFont, buttonText, buttonTextPosition, Color.White); // Draw button text
+
+                //// Check for a mouse click on the button
+                if (isMouseOverButton && mouseState.LeftButton == ButtonState.Pressed)
+                {
+                    // Trigger the login action here
+                    OnLoginButtonClick();
+                }
+            }
             spriteBatch.End();
         }
 
@@ -158,27 +163,51 @@ namespace tibiamonoopengl.UI.Framework
             }
         }
 
+        private bool isAttemptingLogin = false;
+
         private async Task OnLoginButtonClick()
         {
-            // Retrieve username and password
+            if (isAttemptingLogin) return;
+
+            isAttemptingLogin = true;
             string username = usernameField.Text;
             string password = passwordField.Text;
 
-            // Server address and port
-            string serverAddresstemp = serverAddress; 
-            int serverPorttemp = serverPort; 
-
-            // Send login request
             try
             {
-                await networkManager.SendLoginRequestAsync(serverAddresstemp, serverPorttemp, username, password, currentGameTime);
-                Debug.WriteLine("Login request sent.");
+                if (!networkManager.IsConnected)
+                {
+                    await networkManager.ConnectToServerAsync(serverAddress, serverPort, currentGameTime);
+                }
+
+                if (networkManager.IsConnected)
+                {
+                    await networkManager.SendLoginRequestAsync(serverAddress, serverPort, username, password, currentGameTime);
+                    Debug.WriteLine("Login request sent.");
+                }
+                else
+                {
+                    Debug.WriteLine("Failed to connect to the server.");
+                }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error sending login request: {ex.Message}");
+                Debug.WriteLine($"Error during login: {ex.Message}");
+            }
+            finally
+            {
+                isAttemptingLogin = false;
             }
         }
+
+
+
+        public void UpdateUIAfterLogin ()
+        {
+            showLoginUI = false;
+        }
+
+
 
 
     }
