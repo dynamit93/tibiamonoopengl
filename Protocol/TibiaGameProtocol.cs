@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.IO;
+using System.Diagnostics;
 
 namespace CTC
 {
@@ -124,7 +125,29 @@ namespace CTC
         /// <param name="data"></param>
         public TibiaGameProtocol(TibiaGameData data)
         {
-            Stream f = Assembly.GetExecutingAssembly().GetManifestResourceStream("TibiaProtocolMap.xml");
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+            var assembly = Assembly.GetExecutingAssembly();
+
+            // Print all resource names
+            foreach (var resourceName in assembly.GetManifestResourceNames())
+            {
+                Debug.WriteLine("Resource: " + resourceName);
+            }
+
+            string resourcePath = "tibiamonoopengl.TibiaProtocolMap.xml";
+            Console.WriteLine($"Looking for resource: {resourcePath}");
+            foreach (var resourceName in assembly.GetManifestResourceNames())
+            {
+                Console.WriteLine(resourceName);
+            }
+
+            Stream f = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourcePath);
+
+
+           // Stream f = Assembly.GetExecutingAssembly().GetManifestResourceStream("TibiaProtocolMap.xml");
             Factory = new TibiaGamePacketParserFactory(f, data);
 
             AddPacketHandler("ErrorMessage", ErrorMessage);

@@ -37,12 +37,13 @@ namespace tibiamonoopengl
         private NetworkStream networkStream;
         private RsaDecryptor rsaDecryptor;
         private LoginWindow loginWindow;
-        private NetworkManager networkManager;
         private Texture2D backgroundTexture;
-        private TextInputField usernameField;
-        private TextInputField passwordField;
-        private bool isNetworkInitialized = false;
-        
+        private ClientState clientState;
+        public TibiaGameProtocol Protocol;
+        public TibiaGameData GameData;
+
+
+
         // Connect to the server
         public string serverAddress = "127.0.0.1";
         public int serverPort = 1300; // Replace with the actual server port
@@ -68,6 +69,8 @@ namespace tibiamonoopengl
             // Setup the window
             //loginWindow = new LoginWindow();
 
+                      
+
             IsFixedTimeStep = false;
             Graphics.SynchronizeWithVerticalRetrace = false;
             //graphics.GraphicsDevice.PresentationParameters.PresentationInterval = PresentInterval.One;
@@ -84,12 +87,22 @@ namespace tibiamonoopengl
         /// </summary>
         protected override void LoadContent()
         {
+            // Initialize PacketStream here (e.g., TibiaNetworkStream)
+            PacketStream packetStream = new TibiaNetworkStream(networkStream);
+
+            // Initialize ClientState with the PacketStream
+            clientState = new ClientState(packetStream);
+
+
+
+
 
             spriteBatch = new SpriteBatch(GraphicsDevice);
             //loginWindow = new LoginWindow();
             backgroundTexture = Content.Load<Texture2D>("loginscreenbackground");
             //loginWindow = new LoginWindow(backgroundTexture);
-            loginWindow = new LoginWindow(backgroundTexture, spriteBatch, GraphicsDevice, serverAddress, serverPort);
+
+            loginWindow = new LoginWindow(backgroundTexture, spriteBatch, GraphicsDevice, serverAddress, serverPort, clientState.Viewport);
             UIContext.Initialize(Window, Graphics, Content);
             UIContext.Load();
 
@@ -107,7 +120,7 @@ namespace tibiamonoopengl
             Desktop.LayoutSubviews();
             Desktop.NeedsLayout = true;
 
-
+            
             // Log: Resolving DNS
             Debug.WriteLine($"Resolving DNS for server: {serverAddress}");
 
@@ -147,10 +160,12 @@ namespace tibiamonoopengl
             //    // Start receiving data in a background task
             //    Task.Run(() => networkManager.ConnectToServerAsync(serverAddress, serverPort, gameTime));
             //}
-           // networkManager = new NetworkManager();
+            // networkManager = new NetworkManager();
 
             // Start the network data reception in a separate task without blocking
             //Task.Run(async () => await networkManager.ConnectToServerAsync(serverAddress, serverPort, gameTime));
+
+            //clientState.Update(gameTime);
 
 
             if (loginWindow != null)

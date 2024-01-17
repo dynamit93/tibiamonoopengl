@@ -28,7 +28,7 @@ namespace tibiamonoopengl.UI.Framework
 
 
 
-        public LoginWindow(Texture2D backgroundTexture, SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, string serverAddress, int serverPort)
+        public LoginWindow(Texture2D backgroundTexture, SpriteBatch spriteBatch, GraphicsDevice graphicsDevice, string serverAddress, int serverPort, ClientViewport clientViewport)
         {
             this.backgroundTexture = backgroundTexture;
             this.spriteBatch = spriteBatch;
@@ -51,7 +51,7 @@ namespace tibiamonoopengl.UI.Framework
 
             this.serverAddress = serverAddress;
             this.serverPort = serverPort;
-            networkManager = new NetworkManager(this);
+            networkManager = new NetworkManager(clientViewport,this);
 
             // Subscribe to the ConnectionStatusChanged event of NetworkManager
             //networkManager.ConnectionStatusChanged += NetworkManager_ConnectionStatusChanged;

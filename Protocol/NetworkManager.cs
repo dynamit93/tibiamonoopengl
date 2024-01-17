@@ -10,6 +10,9 @@ using tibiamonoopengl.Rsa;
 using Microsoft.Xna.Framework;
 using CTC;
 using tibiamonoopengl.UI.Framework;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using Microsoft.Xna.Framework.Graphics;
 namespace tibiamonoopengl.Protocol
 {
     public class NetworkManager
@@ -20,10 +23,11 @@ namespace tibiamonoopengl.Protocol
         public bool IsConnected { get; set; }
         public event EventHandler<bool> ConnectionStatusChanged;
         private LoginWindow loginWindow;
+        private ClientViewport clientViewport;
 
-
-        public NetworkManager(LoginWindow loginWindow)
+        public NetworkManager(ClientViewport viewport, LoginWindow loginWindow)
         {
+            this.clientViewport = viewport;
             this.loginWindow = loginWindow;
 
             //rsaDecryptor = new RsaDecryptor("path/to/key.pem");
@@ -83,7 +87,7 @@ namespace tibiamonoopengl.Protocol
                         NetworkMessage message = tibiaNetworkStream.Read(gameTime);
                         if (message != null)
                         {
-                            ProcessReceivedData(message.GetData(), message.GetSize());
+                            ReceiveDataFromServer(message.GetData(), message.GetSize());
                         }
                     }
                     else
@@ -112,36 +116,79 @@ namespace tibiamonoopengl.Protocol
 
 
 
-        private void ProcessReceivedData(byte[] data, int bytesRead)
+        //private void ProcessReceivedData(byte[] data, int bytesRead)
+        //{
+        //    string receivedString = Encoding.UTF8.GetString(data, 0, bytesRead);
+        //    Debug.WriteLine($"Received data: {receivedString}");
+
+        //    try
+        //    {
+        //        // Assuming the JSON structure is {"player": { ... }}
+        //        var container = JsonConvert.DeserializeObject<Dictionary<string, ClientPlayer>>(receivedString);
+        //        ClientPlayer player = container["player"];
+        //        // Process the player data
+        //    }
+        //    catch (JsonException ex)
+        //    {
+        //        Debug.WriteLine($"JSON Deserialization error: {ex.Message}");
+        //    }
+        //}
+
+        // Example client-side method to receive data
+        private void ReceiveDataFromServer(byte[] data, int size)
         {
-            string receivedString = Encoding.UTF8.GetString(data, 0, bytesRead);
-            Debug.WriteLine($"Received string: {receivedString}");
+            // Convert the received byte array to a string
+            string receivedJson = Encoding.UTF8.GetString(data, 0, size);
+            receivedJson = receivedJson.TrimStart('\0');
+            Debug.WriteLine($"Received JSON: {receivedJson}");
 
-            
-
-            // Split the received string into lines
-            string[] playerLines = receivedString.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-            if (playerLines != null ) {
-                loginWindow.UpdateUIAfterLogin();
-            
-                foreach (string playerLine in playerLines)
+            try
+            {
+                // Deserialize the JSON string to the appropriate object
+                var container = JsonConvert.DeserializeObject<Dictionary<string, ClientPlayer>>(receivedJson);
+                if (container != null && container.ContainsKey("player"))
                 {
-                    if (!string.IsNullOrWhiteSpace(playerLine))
-                    {
-                        // Process each line to extract player information
-                        // Example format: "Player: John, Level: 5, Balance: 1000"
-                        string[] playerDetails = playerLine.Split(',');
-                        foreach (string detail in playerDetails)
-                        {
-                            Debug.WriteLine(detail.Trim()); // Trim to remove leading/trailing whitespaces
-                        }
-                    }
+                    ClientPlayer player = container["player"];
+                    // Process the player data
+                    // Here you can update the UI or game state based on the received player data
+                    // ...
+
+                    UpdatePlayerState(player);
+                }
+                else
+                {
+                    Debug.WriteLine("Deserialization returned null or missing 'player' key.");
                 }
             }
-            // Further processing as needed
+            catch (JsonException ex)
+            {
+                Debug.WriteLine($"JSON Deserialization error: {ex.Message}");
+            }
         }
 
 
+        private void UpdatePlayerState(ClientPlayer player)
+        {
+            // Assuming 'clientViewport' is an instance of ClientViewport
+            // and it's accessible in this context
+
+            // Update the player's state in the viewport
+            clientViewport.Player = player;
+
+            //// Update other game states or UI elements as needed
+            //RefreshUI();
+            //UpdateMap();
+            //// ... other update methods ...
+
+            //// Trigger any events or notifications necessary
+            //OnPlayerStateUpdated(); // This is a hypothetical event handler
+        }
+
+
+        public void SetClientViewport(ClientViewport viewport)
+        {
+            this.clientViewport = viewport;
+        }
 
         public async Task SendLoginRequestAsync(string serverAddress, int port, string username, string password, GameTime gameTime)
         {
