@@ -177,11 +177,15 @@ namespace tibiamonoopengl.UI.Framework
             {
                 if (!networkManager.IsConnected)
                 {
+                    Debug.WriteLine("00000000");
+
                     await networkManager.ConnectToServerAsync(serverAddress, serverPort, currentGameTime);
                 }
+                Debug.WriteLine("1111111111111111");
 
                 if (networkManager.IsConnected)
                 {
+                    Debug.WriteLine("2222222222222");
                     await networkManager.SendLoginRequestAsync(serverAddress, serverPort, username, password, currentGameTime);
                     Debug.WriteLine("Login request sent.");
                 }

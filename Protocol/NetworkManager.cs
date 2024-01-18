@@ -54,7 +54,8 @@ namespace tibiamonoopengl.Protocol
                     await networkStream.WriteAsync(authBytes, 0, authBytes.Length);
 
                 // Start receiving data in a separate task
-                await StartReceivingDataAsync(gameTime);
+                Task.Run(() => StartReceivingDataAsync(gameTime));
+                return;
             }
             catch (Exception ex)
             {
@@ -203,7 +204,9 @@ namespace tibiamonoopengl.Protocol
                 // Connected or reconnected successfully, proceed with login request
                 string message = $"LOGIN {username} {password}";
                 byte[] messageBytes = Encoding.UTF8.GetBytes(message);
+                var str = System.Text.Encoding.Default.GetString(messageBytes);
 
+                Debug.WriteLine(str);
                 await networkStream.WriteAsync(messageBytes, 0, messageBytes.Length);
             }
             else
