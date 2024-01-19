@@ -41,7 +41,8 @@ namespace tibiamonoopengl
         private ClientState clientState;
         public TibiaGameProtocol Protocol;
         public TibiaGameData GameData;
-
+        private NetworkManager networkManager;
+        private ClientViewport clientViewport;
 
 
         // Connect to the server
@@ -57,19 +58,20 @@ namespace tibiamonoopengl
             Graphics.PreferredBackBufferWidth = 1280;
             Graphics.PreferredBackBufferHeight = 800;
             Content.RootDirectory = "Content";
-            
+            networkManager = new NetworkManager(clientViewport, loginWindow);
+
         }
         
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
 
-            //networkManager = new NetworkManager();
+            networkManager = new NetworkManager(clientViewport, loginWindow);
             Debug.WriteLine("NetworkManager initialized in Initialize");
             // Setup the window
             //loginWindow = new LoginWindow();
 
-                      
+            
 
             IsFixedTimeStep = false;
             Graphics.SynchronizeWithVerticalRetrace = false;
@@ -94,7 +96,7 @@ namespace tibiamonoopengl
             clientState = new ClientState(packetStream);
 
 
-
+            
 
 
             spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -168,6 +170,9 @@ namespace tibiamonoopengl
             //clientState.Update(gameTime);
 
 
+            
+
+
             if (loginWindow != null)
             {
                 loginWindow.Update(gameTime);
@@ -200,21 +205,50 @@ namespace tibiamonoopengl
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
-            // Draw login window
-            loginWindow.Draw();
+            //// Draw login window
+            //loginWindow.Draw();
+            if (NetworkManager.characterlist)
+            {
 
+                //// add game screen in login window
+                try
+                {
+                    GraphicsDevice.Clear(Color.Black);
+                    Desktop.Draw(null, Window.ClientBounds);
+                }
+                catch (Exception e)
+                {
+                    throw;
+                }
+            }
+            else
+            {
+                GraphicsDevice.Clear(Color.Black);
+                // Draw login window
+                loginWindow.Draw();
+            }
 
-
-
-            //// add game screen in login window
-            //try
+            //if (characterlist)
             //{
-            //    Desktop.Draw(null, Window.ClientBounds);
+            //    //// add game screen in login window
+            //    try
+            //    {
+            //        GraphicsDevice.Clear(Color.Black);
+            //        Desktop.Draw(null, Window.ClientBounds);
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        throw;
+            //    }
             //}
-            //catch (Exception e)
+            //else
             //{
-            //    throw;
+            //    GraphicsDevice.Clear(Color.Black);
+            //    // Draw login window
+            //    loginWindow.Draw();
             //}
+
+
 
 
             base.Draw(gameTime);

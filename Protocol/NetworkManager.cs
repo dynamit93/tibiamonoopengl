@@ -24,12 +24,13 @@ namespace tibiamonoopengl.Protocol
         public event EventHandler<bool> ConnectionStatusChanged;
         private LoginWindow loginWindow;
         private ClientViewport clientViewport;
+        public static bool characterlist {get; set;}
 
         public NetworkManager(ClientViewport viewport, LoginWindow loginWindow)
         {
             this.clientViewport = viewport;
             this.loginWindow = loginWindow;
-
+           // characterlist = false;
             //rsaDecryptor = new RsaDecryptor("path/to/key.pem");
         }
 
@@ -147,9 +148,12 @@ namespace tibiamonoopengl.Protocol
             {
                 // Deserialize the JSON string to the appropriate object
                 var container = JsonConvert.DeserializeObject<Dictionary<string, ClientPlayer>>(receivedJson);
+                
                 if (container != null && container.ContainsKey("player"))
                 {
+
                     ClientPlayer player = container["player"];
+                    characterlist = true;
                     // Process the player data
                     // Here you can update the UI or game state based on the received player data
                     // ...
@@ -158,6 +162,7 @@ namespace tibiamonoopengl.Protocol
                 }
                 else
                 {
+                    
                     Debug.WriteLine("Deserialization returned null or missing 'player' key.");
                 }
             }
