@@ -6,6 +6,9 @@ using Microsoft.Xna.Framework;
 
 namespace CTC
 {
+
+
+
     public interface PacketStream
     {
         /// <summary>
@@ -34,5 +37,9 @@ namespace CTC
         /// </summary>
         /// <param name="nmsg"></param>
         void Write(NetworkMessage nmsg);
+
+
+
+
     }
 }

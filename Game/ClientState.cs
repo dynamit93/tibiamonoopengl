@@ -18,7 +18,7 @@ namespace CTC
         public readonly TibiaGameData GameData;
         public readonly TibiaGameProtocol Protocol;
         private readonly PacketStream InStream;
-
+        UInt32 PlayerId = 1;
         public ClientState(PacketStream InStream)
         {
             this.InStream = InStream;
@@ -27,6 +27,7 @@ namespace CTC
             GameData = new TibiaGameData(datFile, sprFile);
             Protocol = new TibiaGameProtocol(GameData);
             Viewport = new ClientViewport(GameData, Protocol);
+
         }
 
         public String HostName

@@ -140,7 +140,7 @@ namespace CTC
             // Draw the button background
             Color backgroundColor = Highlighted ? Color.Gray : Color.DarkGray; // Example colors
             
-            Debug.WriteLine($"Bounds: {Bounds}");
+            //Debug.WriteLine($"Bounds: {Bounds}");
             CurrentBatch.Draw(UIContext.WhitePixel, Bounds, Color.Blue);
 
 

@@ -182,16 +182,16 @@ namespace CTC
             if (Player == null)
                 throw new ProtocolException("Received skill update before PlayerLogin");
 
-            Player.Skill["Fist"].Value   = (int)props["Fist"];
-            Player.Skill["Club"].Value   = (int)props["Club"];
+            Player.Skill["SkillFist"].Value   = (int)props["SkillFist"];
+            Player.Skill["SkillClub"].Value   = (int)props["SkillClub"];
             Player.Skill["Sword"].Value  = (int)props["Sword"];
             Player.Skill["Axe"].Value    = (int)props["Axe"];
             Player.Skill["Dist"].Value   = (int)props["Dist"];
             Player.Skill["Shield"].Value = (int)props["Shield"];
             Player.Skill["Fish"].Value   = (int)props["Fish"];
 
-            Player.Skill["Fist"].Percent   = (int)props["FistPercent"];
-            Player.Skill["Club"].Percent   = (int)props["ClubPercent"];
+            Player.Skill["SkillFist"].Percent   = (int)props["FistPercent"];
+            Player.Skill["SkillClub"].Percent   = (int)props["ClubPercent"];
             Player.Skill["Sword"].Percent  = (int)props["SwordPercent"];
             Player.Skill["Axe"].Percent    = (int)props["AxePercent"];
             Player.Skill["Dist"].Percent   = (int)props["DistPercent"];

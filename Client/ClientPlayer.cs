@@ -34,7 +34,6 @@ namespace CTC
 
         public int PlayerId { get; set; }
 
-
         public string Name { get; set; }
 
         public int Level { get; set; } = 1;
@@ -81,11 +80,11 @@ namespace CTC
 
         public ConditionState Conditions = ConditionState.None;
 
-        public ClientPlayer(UInt32 PlayerID)
-            : base(PlayerID)
+        public ClientPlayer(UInt32 PlayerId)
+            : base(PlayerId)
         {
-            Skill["Fist"] = new ClientSkill("Fist Fighting");
-            Skill["Club"] = new ClientSkill("Club Fighting");
+            Skill["SkillFist"] = new ClientSkill("Fist Fighting");
+            Skill["SkillClub"] = new ClientSkill("Club Fighting");
             Skill["Sword"] = new ClientSkill("Sword Fighting");
             Skill["Axe"] = new ClientSkill("Axe Fighting");
             Skill["Dist"] = new ClientSkill("Distance Fighting");

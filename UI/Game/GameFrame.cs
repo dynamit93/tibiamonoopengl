@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using tibiamonoopengl;
 
 namespace CTC
 {
@@ -10,6 +11,7 @@ namespace CTC
     {
         List<GameCanvas> Canvas = new List<GameCanvas>();
         GameCanvas ActiveCanvas = null;
+        DebugManager debugManager = new DebugManager();
 
         public GameFrame()
         {
@@ -23,7 +25,8 @@ namespace CTC
             GameCanvas Canvas = new GameCanvas(State);
             AddSubview(Canvas);
             ActiveCanvas = Canvas;
-
+            debugManager.LogMessage(Log.Level.Error, State.Viewport.Player.Name);
+            Console.WriteLine(State.Viewport.Player.Name);
             InsertTab(Tabs.Count - 1, State.Viewport.Player.Name + "(" + State.HostName + ")");
         }
 

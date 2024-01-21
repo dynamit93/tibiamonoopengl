@@ -13,10 +13,16 @@ using tibiamonoopengl.UI.Framework;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
+using System.ComponentModel;
 namespace tibiamonoopengl.Protocol
 {
+
+
+
+
     public class NetworkManager
     {
+        private GameDesktop gameDesktop;
         private TcpClient tcpClient;
         private NetworkStream networkStream;
         //private RsaDecryptor rsaDecryptor;
@@ -25,38 +31,56 @@ namespace tibiamonoopengl.Protocol
         private LoginWindow loginWindow;
         private ClientViewport clientViewport;
         public static bool characterlist {get; set;}
+        PacketStream packetStream;
+        DebugManager debugManager = new DebugManager();
 
-        public NetworkManager(ClientViewport viewport, LoginWindow loginWindow)
+        public NetworkManager(ClientViewport viewport, LoginWindow loginWindow, GameDesktop gameDesktop)
         {
             this.clientViewport = viewport;
             this.loginWindow = loginWindow;
-           // characterlist = false;
+            this.gameDesktop = gameDesktop;
+            // gameDesktop = new GameDesktop();
+            // characterlist = false;
             //rsaDecryptor = new RsaDecryptor("path/to/key.pem");
         }
 
         private bool isConnecting = false;
-
+        private void HandleSuccessfulLogin(ClientPlayer player)
+        {
+            // Create ClientState
+            ClientState clientState = new ClientState(packetStream); // Initialize with necessary data
+            //gameDesktop = new GameDesktop();
+            // Add client to GameDesktop
+            gameDesktop.AddClient(clientState);
+        }
         public async Task ConnectToServerAsync(string serverAddress, int port, GameTime gameTime)
         {
             if (isConnecting) return;
 
             isConnecting = true;
             tcpClient = new TcpClient();
+
             try
             {
+                // First, connect to the server
                 await tcpClient.ConnectAsync(serverAddress, port);
-                    networkStream = tcpClient.GetStream();
-                    IsConnected = true;
-                    OnConnectionStatusChanged(true);
 
-                    // Send the initial authentication token or any other setup data
-                    string authToken = "ExpectedAuthToken";
-                    byte[] authBytes = Encoding.UTF8.GetBytes(authToken);
-                    await networkStream.WriteAsync(authBytes, 0, authBytes.Length);
+                // After successfully connecting, get the network stream
+                networkStream = tcpClient.GetStream();
+
+                // Now that networkStream is not null, initialize TibiaNetworkStream
+                packetStream = new TibiaNetworkStream(networkStream);
+
+                IsConnected = true;
+                OnConnectionStatusChanged(true);
+
+                // Send the initial authentication token or any other setup data
+                string authToken = "ExpectedAuthToken";
+                byte[] authBytes = Encoding.UTF8.GetBytes(authToken);
+                await networkStream.WriteAsync(authBytes, 0, authBytes.Length);
 
                 // Start receiving data in a separate task
                 Task.Run(() => StartReceivingDataAsync(gameTime));
-                return;
             }
             catch (Exception ex)
             {
@@ -70,25 +94,69 @@ namespace tibiamonoopengl.Protocol
             }
         }
 
+
         public async Task StartReceivingDataAsync(GameTime gameTime)
         {
+            //if (!IsConnected)
+            //{
+            //    Debug.WriteLine("Cannot start receiving data: not connected to the server.");
+            //    return;
+            //}
+
+            //TibiaNetworkStream tibiaNetworkStream = new TibiaNetworkStream(networkStream);
+
+            //while (IsConnected)
+            //{
+            //    try
+            //    {
+            //        if (networkStream.DataAvailable)
+            //        {
+            //            NetworkMessage message = tibiaNetworkStream.Read(gameTime);
+            //            if (message != null)
+            //            {
+            //                ReceiveDataFromServer(message.GetData(), message.GetSize());
+            //            }
+            //        }
+            //        else
+            //        {
+            //            Debug.WriteLine("No data available to read.");
+            //        }
+            //        await Task.Delay(100); // Reduced delay
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Debug.WriteLine($"Exception in data receiving loop: {ex.Message}");
+            //        if (ex.Message.Contains("Connection closed"))
+            //        {
+            //            Debug.WriteLine("Connection to server lost.");
+            //            IsConnected = false;
+            //            OnConnectionStatusChanged(false);
+            //            break;
+            //        }
+            //    }
+            //}
+
             if (!IsConnected)
             {
                 Debug.WriteLine("Cannot start receiving data: not connected to the server.");
                 return;
             }
 
+            // Use TibiaNetworkStream for handling network operations
             TibiaNetworkStream tibiaNetworkStream = new TibiaNetworkStream(networkStream);
 
             while (IsConnected)
             {
                 try
                 {
-                    if (networkStream.DataAvailable)
+                    // Poll for new data
+                    if (tibiaNetworkStream.Poll(gameTime))
                     {
+                        // Read the incoming message
                         NetworkMessage message = tibiaNetworkStream.Read(gameTime);
                         if (message != null)
                         {
+                            // Process the received data
                             ReceiveDataFromServer(message.GetData(), message.GetSize());
                         }
                     }
@@ -96,7 +164,7 @@ namespace tibiamonoopengl.Protocol
                     {
                         Debug.WriteLine("No data available to read.");
                     }
-                    await Task.Delay(100); // Reduced delay
+                    await Task.Delay(100); // Delay to prevent tight loop; adjust as needed
                 }
                 catch (Exception ex)
                 {
@@ -110,6 +178,7 @@ namespace tibiamonoopengl.Protocol
                     }
                 }
             }
+
         }
 
 
@@ -157,8 +226,8 @@ namespace tibiamonoopengl.Protocol
                     // Process the player data
                     // Here you can update the UI or game state based on the received player data
                     // ...
-
-                    UpdatePlayerState(player);
+                    HandleSuccessfulLogin(player);
+                    //UpdatePlayerState(player);
                 }
                 else
                 {
@@ -169,6 +238,10 @@ namespace tibiamonoopengl.Protocol
             catch (JsonException ex)
             {
                 Debug.WriteLine($"JSON Deserialization error: {ex.Message}");
+                
+                Console.WriteLine($"JSON Deserialization error: {ex.Message}");
+
+                debugManager.LogMessage(Log.Level.Error, ex.Message);
             }
         }
 
@@ -198,27 +271,20 @@ namespace tibiamonoopengl.Protocol
 
         public async Task SendLoginRequestAsync(string serverAddress, int port, string username, string password, GameTime gameTime)
         {
-            //if (!IsConnected)
-            //{
-            //    // If not connected, attempt to establish a new connection
-            //    await ConnectToServerAsync(serverAddress, port, gameTime);
-            //}
+            if (!IsConnected)
+            {
+                // Connect to the server first
+                await ConnectToServerAsync(serverAddress, port, gameTime);
+            }
 
             if (IsConnected)
             {
-                // Connected or reconnected successfully, proceed with login request
                 string message = $"LOGIN {username} {password}";
                 byte[] messageBytes = Encoding.UTF8.GetBytes(message);
-                var str = System.Text.Encoding.Default.GetString(messageBytes);
-
-                Debug.WriteLine(str);
                 await networkStream.WriteAsync(messageBytes, 0, messageBytes.Length);
             }
-            else
-            {
-                throw new InvalidOperationException("Not connected to the server.");
-            }
         }
+
 
 
 

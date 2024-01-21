@@ -302,9 +302,9 @@ namespace CTC
                 return delegate(NetworkMessage nmsg)
                 {
                     Packet props = new Packet(parserName);
-                    props["Fist"] = (int)nmsg.ReadByte();
+                    props["SkillFist"] = (int)nmsg.ReadByte();
                     props["FistPercent"] = (int)nmsg.ReadByte();
-                    props["Club"] = (int)nmsg.ReadByte();
+                    props["SkillClub"] = (int)nmsg.ReadByte();
                     props["ClubPercent"] = (int)nmsg.ReadByte();
                     props["Sword"] = (int)nmsg.ReadByte();
                     props["SwordPercent"] = (int)nmsg.ReadByte();

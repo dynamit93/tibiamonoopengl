@@ -21,6 +21,7 @@ using ImGuiNET;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
 using tibiamonoopengl.UI.Framework;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 
 
@@ -45,6 +46,11 @@ namespace tibiamonoopengl
         private ClientViewport clientViewport;
 
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool AllocConsole();
+
+
         // Connect to the server
         public string serverAddress = "127.0.0.1";
         public int serverPort = 1300; // Replace with the actual server port
@@ -58,7 +64,7 @@ namespace tibiamonoopengl
             Graphics.PreferredBackBufferWidth = 1280;
             Graphics.PreferredBackBufferHeight = 800;
             Content.RootDirectory = "Content";
-            networkManager = new NetworkManager(clientViewport, loginWindow);
+            networkManager = new NetworkManager(clientViewport, loginWindow, Desktop);
 
         }
         
@@ -66,7 +72,17 @@ namespace tibiamonoopengl
         {
             // TODO: Add your initialization logic here
 
-            networkManager = new NetworkManager(clientViewport, loginWindow);
+            AllocConsole();
+
+            Console.WriteLine("Console Window Opened");
+            UIContext.Initialize(Window, Graphics, Content);
+            UIContext.Load();
+            // Initialize Desktop before NetworkManager
+            Desktop = new GameDesktop();
+            Desktop.Load();
+            Desktop.CreatePanels();
+            Desktop.NeedsLayout = true;
+            networkManager = new NetworkManager(clientViewport, loginWindow, Desktop);
             Debug.WriteLine("NetworkManager initialized in Initialize");
             // Setup the window
             //loginWindow = new LoginWindow();
@@ -90,21 +106,19 @@ namespace tibiamonoopengl
         protected override void LoadContent()
         {
             // Initialize PacketStream here (e.g., TibiaNetworkStream)
-            PacketStream packetStream = new TibiaNetworkStream(networkStream);
+           // PacketStream packetStream = new TibiaNetworkStream(networkStream);
 
             // Initialize ClientState with the PacketStream
-            clientState = new ClientState(packetStream);
+            //clientState = new ClientState(packetStream);
 
 
             
 
 
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            //loginWindow = new LoginWindow();
             backgroundTexture = Content.Load<Texture2D>("loginscreenbackground");
-            //loginWindow = new LoginWindow(backgroundTexture);
 
-            loginWindow = new LoginWindow(backgroundTexture, spriteBatch, GraphicsDevice, serverAddress, serverPort, clientState.Viewport);
+            loginWindow = new LoginWindow(backgroundTexture, spriteBatch, GraphicsDevice, serverAddress, serverPort, clientViewport, Desktop);
             UIContext.Initialize(Window, Graphics, Content);
             UIContext.Load();
 
@@ -112,15 +126,16 @@ namespace tibiamonoopengl
             rsaDecryptor = new RsaDecryptor("C:\\Users\\dennis\\source\\repos\\tibiamonoopengl\\Rsa\\key.pem");
 
             //networkManager = new NetworkManager();
-
-
+            
+            
             //loginWindow = new LoginWindow();
-            Desktop = new GameDesktop();
-            //Desktop.AddSubview(loginWindow);
-            Desktop.Load();
-            Desktop.CreatePanels();
-            Desktop.LayoutSubviews();
-            Desktop.NeedsLayout = true;
+           // Desktop = new GameDesktop();
+
+            ////Desktop.AddSubview();
+            //Desktop.Load();
+            //Desktop.CreatePanels();
+            ////Desktop.LayoutSubviews();
+            //Desktop.NeedsLayout = true;
 
             
             // Log: Resolving DNS
@@ -214,6 +229,7 @@ namespace tibiamonoopengl
                 try
                 {
                     GraphicsDevice.Clear(Color.Black);
+                    //Desktop.AddClient(clientState);
                     Desktop.Draw(null, Window.ClientBounds);
                 }
                 catch (Exception e)

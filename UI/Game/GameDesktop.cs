@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
@@ -75,6 +76,19 @@ namespace CTC
         // Methods
         public void AddClient(ClientState State)
         {
+            if (State == null)
+            {
+                Debug.WriteLine("AddClient called with null ClientState.");
+                return;
+            }
+
+            if (State.Viewport == null)
+            {
+                Debug.WriteLine("AddClient called with ClientState having null Viewport.");
+                return;
+            }
+
+
             Clients.Add(State);
             ActiveClient = State;
 
