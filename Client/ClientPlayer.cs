@@ -32,11 +32,11 @@ namespace CTC
         public int AccountId { get; set; }
 
 
-        public int PlayerId { get; set; }
+        //public int PlayerId { get; set; }
 
         public string Name { get; set; }
 
-        public int Level { get; set; } = 1;
+       // public int Level { get; set; } = 1;
 
         public long Balance { get; set; }
         public byte Blessings { get; set; }
@@ -75,7 +75,7 @@ namespace CTC
 
         //public int Capacity = Cap;
         //public int Experience = 0;
-        public ClientSkill LevelSkill = new ClientSkill("Level");
+        public ClientSkill Level = new ClientSkill("Level");
         public ClientSkill MagicLevel = new ClientSkill("Magic Level");
 
         public ConditionState Conditions = ConditionState.None;

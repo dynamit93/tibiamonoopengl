@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
 using System.ComponentModel;
+using System.Numerics;
 namespace tibiamonoopengl.Protocol
 {
 
@@ -33,23 +34,33 @@ namespace tibiamonoopengl.Protocol
         public static bool characterlist {get; set;}
         PacketStream packetStream;
         DebugManager debugManager = new DebugManager();
-
+        public ClientState clientState;
         public NetworkManager(ClientViewport viewport, LoginWindow loginWindow, GameDesktop gameDesktop)
         {
             this.clientViewport = viewport;
             this.loginWindow = loginWindow;
             this.gameDesktop = gameDesktop;
+            
             // gameDesktop = new GameDesktop();
             // characterlist = false;
             //rsaDecryptor = new RsaDecryptor("path/to/key.pem");
+
+
         }
 
+
+
         private bool isConnecting = false;
-        private void HandleSuccessfulLogin(ClientPlayer player)
+        
+
+        private void HandleSuccessfulLogin()
         {
-            // Create ClientState
-            ClientState clientState = new ClientState(packetStream); // Initialize with necessary data
-            //gameDesktop = new GameDesktop();
+            // Use the ClientPlayer data to initialize or update ClientState
+            // For example:
+            //clientState = new ClientState(packetStream); // Initialize with necessary data
+            clientState = new ClientState(packetStream);
+        //clientState.UpdateWithPlayerData(player); // Update ClientState with player data
+
             // Add client to GameDesktop
             gameDesktop.AddClient(clientState);
         }
@@ -69,7 +80,7 @@ namespace tibiamonoopengl.Protocol
                 networkStream = tcpClient.GetStream();
 
                 // Now that networkStream is not null, initialize TibiaNetworkStream
-                packetStream = new TibiaNetworkStream(networkStream);
+                
 
                 IsConnected = true;
                 OnConnectionStatusChanged(true);
@@ -154,7 +165,8 @@ namespace tibiamonoopengl.Protocol
                     {
                         // Read the incoming message
                         NetworkMessage message = tibiaNetworkStream.Read(gameTime);
-                        if (message != null)
+                       
+                        if (message != null && message.Text != "")
                         {
                             // Process the received data
                             ReceiveDataFromServer(message.GetData(), message.GetSize());
@@ -182,7 +194,12 @@ namespace tibiamonoopengl.Protocol
         }
 
 
-
+        public void UpdateClientStateWithPlayerData(ClientPlayer playerData)
+        {
+            clientState = new ClientState(packetStream);
+            // Assuming you have access to an instance of ClientState
+            clientState.UpdateWithPlayerData(playerData);
+        }
 
 
 
@@ -211,23 +228,28 @@ namespace tibiamonoopengl.Protocol
             // Convert the received byte array to a string
             string receivedJson = Encoding.UTF8.GetString(data, 0, size);
             receivedJson = receivedJson.TrimStart('\0');
+            debugManager.LogMessage(Log.Level.Debug, receivedJson);
             Debug.WriteLine($"Received JSON: {receivedJson}");
 
             try
             {
+                var playerData = JsonConvert.DeserializeObject<ClientPlayer>(receivedJson);
                 // Deserialize the JSON string to the appropriate object
                 var container = JsonConvert.DeserializeObject<Dictionary<string, ClientPlayer>>(receivedJson);
-                
+
                 if (container != null && container.ContainsKey("player"))
                 {
-
                     ClientPlayer player = container["player"];
+                    // Pass the deserialized data to ClientState for further processing
+                    UpdateClientStateWithPlayerData(player);
+
                     characterlist = true;
                     // Process the player data
                     // Here you can update the UI or game state based on the received player data
                     // ...
-                    HandleSuccessfulLogin(player);
                     //UpdatePlayerState(player);
+                    HandleSuccessfulLogin();
+                    
                 }
                 else
                 {
@@ -252,7 +274,7 @@ namespace tibiamonoopengl.Protocol
             // and it's accessible in this context
 
             // Update the player's state in the viewport
-            clientViewport.Player = player;
+           clientViewport.Player = player;
 
             //// Update other game states or UI elements as needed
             //RefreshUI();

@@ -29,7 +29,13 @@ namespace CTC
             Viewport = new ClientViewport(GameData, Protocol);
 
         }
+        public void UpdateWithPlayerData(ClientPlayer playerData)
+        {
+            // Update ClientState properties based on playerData
+            // This might involve updating Viewport, GameData, Protocol, etc.
+            Viewport.Player = playerData;
 
+        }
         public String HostName
         {
             get {

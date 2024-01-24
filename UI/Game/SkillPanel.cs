@@ -40,7 +40,7 @@ namespace CTC
             if (Viewport == null)
                 return;
 
-            ContentView.AddSubview(new SkillLabel(Viewport.Player.LevelSkill));
+            ContentView.AddSubview(new SkillLabel(Viewport.Player.Level));
 
             SkillLabel ExperienceLabel = new SkillLabel("Experience", delegate()
             {

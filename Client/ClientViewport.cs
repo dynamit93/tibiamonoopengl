@@ -211,8 +211,8 @@ namespace CTC
             Player.Capacity = (int)props["Capacity"];
             Player.Experience = (int)props["Experience"];
 
-            Player.LevelSkill.Value = (int)props["Level"];
-            Player.LevelSkill.Percent = (int)props["LevelPercent"];
+            Player.Level.Value = (int)props["Level"];
+            Player.Level.Percent = (int)props["LevelPercent"];
             Player.MagicLevel.Value = (int)props["MagicLevel"];
             Player.MagicLevel.Percent = (int)props["MagicLevelPercent"];
         }

@@ -13,13 +13,13 @@ namespace tibiamonoopengl.Protocol
     public class TibiaNetworkStream : PacketStream
     {
         private NetworkStream _networkStream;
-
+     //   public DebugManager DebugManager;
         public TibiaNetworkStream(NetworkStream networkStream)
         {
             _networkStream = networkStream;
 
         }
-
+   //     DebugManager debugManager = new DebugManager();
         public bool Poll(GameTime time)
         {
             if (_networkStream == null)
@@ -80,6 +80,19 @@ namespace tibiamonoopengl.Protocol
 
                 // Print the total bytes read
                 Debug.WriteLine($"Total bytes read: {totalBytesRead}");
+                //debugManager.LogMessage(Log.Level.Error, $"Received raw data: {BitConverter.ToString(dataBuffer)}");
+                Debug.WriteLine($"Received raw data: {BitConverter.ToString(dataBuffer)}");
+
+
+
+
+                // Example usage
+                string hexData = $"{BitConverter.ToString(dataBuffer)}"; // Your hex data
+                hexData = hexData.Replace("-", ""); // Remove dashes if present
+                byte[] byteArray = HexStringToByteArray(hexData);
+                string result = ByteArrayToString(byteArray);
+
+                Debug.WriteLine("hexData: ",result);
 
                 NetworkMessage message = new NetworkMessage();
                 message.SetData(dataBuffer, totalBytesRead);
@@ -89,6 +102,21 @@ namespace tibiamonoopengl.Protocol
         }
 
 
+        public static byte[] HexStringToByteArray(string hex)
+        {
+            int numberChars = hex.Length;
+            byte[] bytes = new byte[numberChars / 2];
+            for (int i = 0; i < numberChars; i += 2)
+            {
+                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            }
+            return bytes;
+        }
+
+        public static string ByteArrayToString(byte[] byteArray)
+        {
+            return Encoding.UTF8.GetString(byteArray);
+        }
 
 
 

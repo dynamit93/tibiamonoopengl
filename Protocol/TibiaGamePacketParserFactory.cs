@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Reflection;
 using System.IO.Pipes;
+using System.Diagnostics;
 
 namespace CTC
 {
@@ -57,6 +58,7 @@ namespace CTC
         public int type;
         public string name;
         public GamePacketParser parser;
+        
     }
 
     class CreatureTurn2Exception : ProtocolException
@@ -71,7 +73,7 @@ namespace CTC
     {
         private TibiaGameData GameData;
         private List<PacketParser> AllHandlers = new List<PacketParser>();
-
+        
         /// <summary>
         /// We need to track the current map position in the protocol, since some packets depend on where we are.
         /// </summary>
@@ -90,6 +92,12 @@ namespace CTC
         /// <param name="File"></param>
         public TibiaGamePacketParserFactory(Stream fileStream, TibiaGameData data)
         {
+
+            Console.WriteLine("Data:",data.ToString());
+            foreach (PacketParser Name in AllHandlers) {
+                Debug.WriteLine("AllHandlers:", Name);
+            }
+            
             GameData = data;
 
             if (fileStream == null)
@@ -163,26 +171,27 @@ namespace CTC
         private GamePacketParser GetPacketParser(String parserName)
         {
             if (parserName == "ErrorMessage")
-                return delegate(NetworkMessage nmsg)
+                return delegate (NetworkMessage nmsg)
                 {
                     Packet props = new Packet(parserName);
                     props["Message"] = nmsg.ReadString();
                     return props;
                 };
             else if (parserName == "MOTD")
-                return delegate(NetworkMessage nmsg)
+                return delegate (NetworkMessage nmsg)
                 {
                     Packet props = new Packet(parserName);
                     props["Message"] = nmsg.ReadString();
                     return props;
                 };
             else if (parserName == "Ping")
-                return delegate(NetworkMessage nmsg)
+                return delegate (NetworkMessage nmsg)
                 {
                     return new Packet(parserName);
                 };
 
             else if (parserName == "PlayerLogin")
+
                 return delegate(NetworkMessage nmsg)
                 {
                     Packet props = new Packet(parserName);
