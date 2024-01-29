@@ -78,10 +78,10 @@ namespace tibiamonoopengl.Protocol
                     Debug.WriteLine($"Total bytes read: {totalBytesRead}");
                 }
 
-                // Print the total bytes read
-                Debug.WriteLine($"Total bytes read: {totalBytesRead}");
-                //debugManager.LogMessage(Log.Level.Error, $"Received raw data: {BitConverter.ToString(dataBuffer)}");
-                Debug.WriteLine($"Received raw data: {BitConverter.ToString(dataBuffer)}");
+                //// Print the total bytes read
+                //Debug.WriteLine($"Total bytes read: {totalBytesRead}");
+                ////debugManager.LogMessage(Log.Level.Error, $"Received raw data: {BitConverter.ToString(dataBuffer)}");
+                //Debug.WriteLine($"Received raw data: {BitConverter.ToString(dataBuffer)}");
 
 
 

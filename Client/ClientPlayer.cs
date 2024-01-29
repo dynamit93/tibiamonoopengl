@@ -29,6 +29,7 @@ namespace CTC
     /// </summary>
     public class ClientPlayer : ClientCreature
     {
+        public string Type {  get; set; }
         public int AccountId { get; set; }
 
 

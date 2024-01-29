@@ -34,12 +34,16 @@ namespace CTC
             // Update ClientState properties based on playerData
             // This might involve updating Viewport, GameData, Protocol, etc.
             Viewport.Player = playerData;
-
+            //HostName = "localhost";
         }
         public String HostName
         {
             get {
                 return InStream.Name;
+            }
+            set
+            {
+                
             }
         }
 

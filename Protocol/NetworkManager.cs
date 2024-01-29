@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
 using System.ComponentModel;
 using System.Numerics;
+using Newtonsoft.Json.Linq;
 namespace tibiamonoopengl.Protocol
 {
 
@@ -42,7 +43,7 @@ namespace tibiamonoopengl.Protocol
             this.gameDesktop = gameDesktop;
             
             // gameDesktop = new GameDesktop();
-            // characterlist = false;
+             characterlist = false;
             //rsaDecryptor = new RsaDecryptor("path/to/key.pem");
 
 
@@ -58,7 +59,7 @@ namespace tibiamonoopengl.Protocol
             // Use the ClientPlayer data to initialize or update ClientState
             // For example:
             //clientState = new ClientState(packetStream); // Initialize with necessary data
-            clientState = new ClientState(packetStream);
+           // clientState = new ClientState(packetStream);
         //clientState.UpdateWithPlayerData(player); // Update ClientState with player data
 
             // Add client to GameDesktop
@@ -67,7 +68,7 @@ namespace tibiamonoopengl.Protocol
         public async Task ConnectToServerAsync(string serverAddress, int port, GameTime gameTime)
         {
             if (isConnecting) return;
-
+       
             isConnecting = true;
             tcpClient = new TcpClient();
 
@@ -80,7 +81,7 @@ namespace tibiamonoopengl.Protocol
                 networkStream = tcpClient.GetStream();
 
                 // Now that networkStream is not null, initialize TibiaNetworkStream
-                
+                packetStream = new TibiaNetworkStream(networkStream);
 
                 IsConnected = true;
                 OnConnectionStatusChanged(true);
@@ -101,6 +102,7 @@ namespace tibiamonoopengl.Protocol
             }
             finally
             {
+                OnConnectionStatusChanged(false);
                 isConnecting = false;
             }
         }
@@ -108,44 +110,6 @@ namespace tibiamonoopengl.Protocol
 
         public async Task StartReceivingDataAsync(GameTime gameTime)
         {
-            //if (!IsConnected)
-            //{
-            //    Debug.WriteLine("Cannot start receiving data: not connected to the server.");
-            //    return;
-            //}
-
-            //TibiaNetworkStream tibiaNetworkStream = new TibiaNetworkStream(networkStream);
-
-            //while (IsConnected)
-            //{
-            //    try
-            //    {
-            //        if (networkStream.DataAvailable)
-            //        {
-            //            NetworkMessage message = tibiaNetworkStream.Read(gameTime);
-            //            if (message != null)
-            //            {
-            //                ReceiveDataFromServer(message.GetData(), message.GetSize());
-            //            }
-            //        }
-            //        else
-            //        {
-            //            Debug.WriteLine("No data available to read.");
-            //        }
-            //        await Task.Delay(100); // Reduced delay
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        Debug.WriteLine($"Exception in data receiving loop: {ex.Message}");
-            //        if (ex.Message.Contains("Connection closed"))
-            //        {
-            //            Debug.WriteLine("Connection to server lost.");
-            //            IsConnected = false;
-            //            OnConnectionStatusChanged(false);
-            //            break;
-            //        }
-            //    }
-            //}
 
             if (!IsConnected)
             {
@@ -194,12 +158,15 @@ namespace tibiamonoopengl.Protocol
         }
 
 
-        public void UpdateClientStateWithPlayerData(ClientPlayer playerData)
-        {
-            clientState = new ClientState(packetStream);
-            // Assuming you have access to an instance of ClientState
-            clientState.UpdateWithPlayerData(playerData);
-        }
+
+
+        //public void UpdateClientStateWithPlayerData(ClientPlayer playerData, ClientState clientState)
+        //{
+            
+        //    // Assuming you have access to an instance of ClientState
+        //  //  clientState.UpdateWithPlayerData(playerData);
+        //    gameDesktop.AddClient(clientState);
+        //}
 
 
 
@@ -221,52 +188,193 @@ namespace tibiamonoopengl.Protocol
         //        Debug.WriteLine($"JSON Deserialization error: {ex.Message}");
         //    }
         //}
-
-        // Example client-side method to receive data
+        private StringBuilder jsonBuffer = new StringBuilder();
         private void ReceiveDataFromServer(byte[] data, int size)
         {
-            // Convert the received byte array to a string
-            string receivedJson = Encoding.UTF8.GetString(data, 0, size);
-            receivedJson = receivedJson.TrimStart('\0');
-            debugManager.LogMessage(Log.Level.Debug, receivedJson);
-            Debug.WriteLine($"Received JSON: {receivedJson}");
+            string receivedPart = Encoding.UTF8.GetString(data, 0, size);
+            jsonBuffer.Append(receivedPart);
 
+            if (IsCompleteJson(jsonBuffer.ToString()))
+            {
+                string completeJson = jsonBuffer.ToString();
+                jsonBuffer.Clear(); // Clear the buffer for the next message
+
+                ProcessJson(completeJson); // Process the complete JSON
+            }
+        }
+        private bool IsCompleteJson(string json)
+        {
+            // Implement logic to check if the JSON string is complete
+            // This could be as simple as checking for a closing brace '}' for simple cases,
+            // or more complex JSON structure validation for advanced scenarios.
+            return json.EndsWith("}");
+        }
+
+
+        private void ProcessJson(string json)
+        {
             try
             {
-                var playerData = JsonConvert.DeserializeObject<ClientPlayer>(receivedJson);
-                // Deserialize the JSON string to the appropriate object
-                var container = JsonConvert.DeserializeObject<Dictionary<string, ClientPlayer>>(receivedJson);
+                Debug.WriteLine("Received JSON: " + json); // Log the complete JSON
 
-                if (container != null && container.ContainsKey("player"))
+                if (!IsValidJson(json))
                 {
-                    ClientPlayer player = container["player"];
-                    // Pass the deserialized data to ClientState for further processing
-                    UpdateClientStateWithPlayerData(player);
+                    throw new InvalidOperationException("Invalid JSON data.");
+                }
+
+                dynamic baseObject = JsonConvert.DeserializeObject<dynamic>(json);
+
+                if (baseObject.Property("player") != null)
+                {
+                    var playerData = JsonConvert.DeserializeObject<Dictionary<string, ClientPlayer>>(json);
+                    ClientPlayer player = playerData["player"];
+                     clientState = new ClientState(packetStream);
+                    clientState.UpdateWithPlayerData(player);
+                    HandleSuccessfulLogin();
+                    //UpdateClientStateWithPlayerData(player, clientState);
 
                     characterlist = true;
-                    // Process the player data
-                    // Here you can update the UI or game state based on the received player data
-                    // ...
-                    //UpdatePlayerState(player);
-                    HandleSuccessfulLogin();
-                    
+                }
+                else if (baseObject.Property("MapData") != null)
+                {
+                    var mapData = JsonConvert.DeserializeObject<Dictionary<string, ClientMap>>(json);
+                    var mapDataJson = mapData["MapData"].ToString();
+                    // Convert the map data into a NetworkMessage format
+                    NetworkMessage mapMessage = ConvertMapDataToNetworkMessage(mapDataJson);
                 }
                 else
                 {
-                    
-                    Debug.WriteLine("Deserialization returned null or missing 'player' key.");
+                    Debug.WriteLine("Unknown data type received.");
                 }
             }
             catch (JsonException ex)
             {
                 Debug.WriteLine($"JSON Deserialization error: {ex.Message}");
-                
-                Console.WriteLine($"JSON Deserialization error: {ex.Message}");
-
-                debugManager.LogMessage(Log.Level.Error, ex.Message);
+            }
+        }
+        private bool IsValidJson(string strInput)
+        {
+            if (string.IsNullOrWhiteSpace(strInput)) { return false; }
+            strInput = strInput.Trim();
+            if ((strInput.StartsWith("{") && strInput.EndsWith("}")) || // For object
+                (strInput.StartsWith("[") && strInput.EndsWith("]"))) // For array
+            {
+                try
+                {
+                    var obj = JToken.Parse(strInput);
+                    return true;
+                }
+                catch (JsonReaderException jex)
+                {
+                    Debug.WriteLine(jex.Message);
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.ToString());
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
             }
         }
 
+        //// Example client-side method to receive data
+        //private void ReceiveDataFromServera(byte[] data, int size)
+        //{
+        //    // Convert the received byte array to a string
+        //    string receivedJson = Encoding.UTF8.GetString(data, 0, size);
+        //    receivedJson = receivedJson.TrimStart('\0');
+        //    debugManager.LogMessage(Log.Level.Debug, receivedJson);
+        //    Debug.WriteLine($"Received JSON: {receivedJson}");
+            
+        //    try
+        //    {
+        //        clientState = new ClientState(packetStream);
+        //        //var playerData = JsonConvert.DeserializeObject<ClientPlayer>(receivedJson);
+        //        // Deserialize the JSON string to the appropriate object
+        //        // Deserialize to a base type or a dynamic object to inspect the "Type" property
+        //        var baseObject = JsonConvert.DeserializeObject<dynamic>(receivedJson);
+
+        //        if (baseObject.Type == "PlayerData")
+        //        {
+        //            var playerData = JsonConvert.DeserializeObject<Dictionary<string, ClientPlayer>>(receivedJson);
+        //            if (playerData != null && playerData.ContainsKey("player"))
+        //            {
+        //                ClientPlayer player = playerData["player"];
+        //                HandleSuccessfulLogin();
+        //                // Pass the deserialized data to ClientState for further processing
+        //                UpdateClientStateWithPlayerData(player, clientState);
+
+        //                characterlist = true;
+        //                // Process the player data
+        //                // Here you can update the UI or game state based on the received player data
+        //                // ...
+        //                //UpdatePlayerState(player);
+        //                // HandleSuccessfulLogin();
+
+        //            }
+        //            else
+        //            {
+
+        //                Debug.WriteLine("Deserialization returned null or missing 'player' key.");
+        //            }
+        //        }
+        //        else if (baseObject.Type == "MapData")
+        //        {
+        //            var mapData = JsonConvert.DeserializeObject<Dictionary<string, ClientMap>>(receivedJson);
+
+        //            if (mapData != null && mapData.ContainsKey("MapData"))
+        //            {
+        //                // Extract the map data from the JSON
+        //                var mapDataJson = mapData["MapData"].ToString();
+        //                // Convert the map data into a NetworkMessage format
+        //                NetworkMessage mapMessage = ConvertMapDataToNetworkMessage(mapDataJson);
+
+        //                // Get the MapDescription packet parser
+        //                //var mapDescriptionParser = Protocol.Factory.CreatePacketHandler("MapDescription");
+        //                // Parse the map data
+        //                //Packet mapPacket = mapDescriptionParser.parser(mapMessage);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            Debug.WriteLine("Unknown data type received.");
+        //        }
+
+
+
+
+        //        }
+        //    catch (JsonException ex)
+        //    {
+        //        Debug.WriteLine($"JSON Deserialization error: {ex.Message}");
+                
+        //        Console.WriteLine($"JSON Deserialization error: {ex.Message}");
+
+        //        debugManager.LogMessage(Log.Level.Error, ex.Message);
+        //    }
+        //}
+
+        // Method to convert JSON map data to NetworkMessage format
+        private NetworkMessage ConvertMapDataToNetworkMessage(string mapDataJson)
+        {
+            debugManager.LogMessage(Log.Level.Debug, mapDataJson);
+            // Implement the logic to convert the JSON map data into the format expected by NetworkMessage
+            // This might involve parsing the JSON to extract tile information, creatures, items, etc.
+            // and then encoding this information in a byte array that NetworkMessage can understand.
+            // ...
+
+            // Assuming you have access to an instance of ClientState
+            bool encodedMapData = true; 
+
+                //MapPosition = MapData;
+
+
+            return new NetworkMessage(encodedMapData);
+        }
 
         private void UpdatePlayerState(ClientPlayer player)
         {
@@ -290,23 +398,22 @@ namespace tibiamonoopengl.Protocol
         {
             this.clientViewport = viewport;
         }
-
+        private bool loginRequestSent = false;
         public async Task SendLoginRequestAsync(string serverAddress, int port, string username, string password, GameTime gameTime)
         {
             if (!IsConnected)
             {
-                // Connect to the server first
                 await ConnectToServerAsync(serverAddress, port, gameTime);
             }
 
-            if (IsConnected)
+            if (IsConnected && !loginRequestSent)
             {
-                string message = $"LOGIN {username} {password}";
-                byte[] messageBytes = Encoding.UTF8.GetBytes(message);
-                await networkStream.WriteAsync(messageBytes, 0, messageBytes.Length);
+                string loginMessage = $"LOGIN {username} {password}";
+                byte[] loginBytes = Encoding.UTF8.GetBytes(loginMessage);
+                await networkStream.WriteAsync(loginBytes, 0, loginBytes.Length);
+                loginRequestSent = true;
             }
         }
-
 
 
 
