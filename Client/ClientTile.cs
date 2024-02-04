@@ -10,12 +10,13 @@ namespace CTC
         public ClientTile(MapPosition Position)
         {
             this.Position = Position;
+            this.Objects = new List<ClientThing>();
         }
 
         public readonly MapPosition Position;
 
-        public ClientItem Ground = null;
-        public List<ClientThing> Objects = new List<ClientThing>();
+        public ClientItem Ground { get; private set; }/*= null;*/
+        public List<ClientThing> Objects { get; private set; } /*= new List<ClientThing>();*/
 
         public void Add(ClientThing Thing, bool Push = false)
         {

@@ -19,13 +19,13 @@ namespace CTC
         public readonly TibiaGameProtocol Protocol;
         private readonly PacketStream InStream;
         UInt32 PlayerId = 1;
-        public ClientState(PacketStream InStream)
+        public ClientState(PacketStream InStream,string filepath)
         {
             this.InStream = InStream;
             FileStream datFile = new FileStream("./Tibia.dat", FileMode.Open);
             FileStream sprFile = new FileStream("./Tibia.spr", FileMode.Open);
             GameData = new TibiaGameData(datFile, sprFile);
-            Protocol = new TibiaGameProtocol(GameData);
+            Protocol = new TibiaGameProtocol(GameData, filepath);
             Viewport = new ClientViewport(GameData, Protocol);
 
         }

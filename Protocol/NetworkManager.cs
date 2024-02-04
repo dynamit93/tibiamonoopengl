@@ -32,18 +32,19 @@ namespace tibiamonoopengl.Protocol
         public event EventHandler<bool> ConnectionStatusChanged;
         private LoginWindow loginWindow;
         private ClientViewport clientViewport;
-        public static bool characterlist {get; set;}
+        public static bool characterlist { get; set; }
         PacketStream packetStream;
         DebugManager debugManager = new DebugManager();
         public ClientState clientState;
+        public TibiaGamePacketParserFactory tibiaGamePacketParserFactory;
         public NetworkManager(ClientViewport viewport, LoginWindow loginWindow, GameDesktop gameDesktop)
         {
             this.clientViewport = viewport;
             this.loginWindow = loginWindow;
             this.gameDesktop = gameDesktop;
-            
+
             // gameDesktop = new GameDesktop();
-             characterlist = false;
+            characterlist = false;
             //rsaDecryptor = new RsaDecryptor("path/to/key.pem");
 
 
@@ -52,15 +53,15 @@ namespace tibiamonoopengl.Protocol
 
 
         private bool isConnecting = false;
-        
+
 
         private void HandleSuccessfulLogin()
         {
             // Use the ClientPlayer data to initialize or update ClientState
             // For example:
             //clientState = new ClientState(packetStream); // Initialize with necessary data
-           // clientState = new ClientState(packetStream);
-        //clientState.UpdateWithPlayerData(player); // Update ClientState with player data
+            // clientState = new ClientState(packetStream);
+            //clientState.UpdateWithPlayerData(player); // Update ClientState with player data
 
             // Add client to GameDesktop
             gameDesktop.AddClient(clientState);
@@ -68,7 +69,7 @@ namespace tibiamonoopengl.Protocol
         public async Task ConnectToServerAsync(string serverAddress, int port, GameTime gameTime)
         {
             if (isConnecting) return;
-       
+
             isConnecting = true;
             tcpClient = new TcpClient();
 
@@ -110,59 +111,101 @@ namespace tibiamonoopengl.Protocol
 
         public async Task StartReceivingDataAsync(GameTime gameTime)
         {
-
             if (!IsConnected)
             {
                 Debug.WriteLine("Cannot start receiving data: not connected to the server.");
                 return;
             }
 
-            // Use TibiaNetworkStream for handling network operations
-            TibiaNetworkStream tibiaNetworkStream = new TibiaNetworkStream(networkStream);
+            byte[] buffer = new byte[1024]; // Adjust buffer size based on expected message size
+            StringBuilder jsonBuffer = new StringBuilder();
 
-            while (IsConnected)
+            try
             {
-                try
+                while (IsConnected)
                 {
-                    // Poll for new data
-                    if (tibiaNetworkStream.Poll(gameTime))
+                    int bytesRead = await networkStream.ReadAsync(buffer, 0, buffer.Length);
+                    if (bytesRead > 0)
                     {
-                        // Read the incoming message
-                        NetworkMessage message = tibiaNetworkStream.Read(gameTime);
-                       
-                        if (message != null && message.Text != "")
-                        {
-                            // Process the received data
-                            ReceiveDataFromServer(message.GetData(), message.GetSize());
-                        }
-                    }
-                    else
-                    {
-                        Debug.WriteLine("No data available to read.");
-                    }
-                    await Task.Delay(100); // Delay to prevent tight loop; adjust as needed
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Exception in data receiving loop: {ex.Message}");
-                    if (ex.Message.Contains("Connection closed"))
-                    {
-                        Debug.WriteLine("Connection to server lost.");
-                        IsConnected = false;
-                        OnConnectionStatusChanged(false);
-                        break;
+                        // Append to JSON buffer
+                        string receivedData = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                        Console.WriteLine($"Received Data: {receivedData}");
+                        jsonBuffer.Append(receivedData);
+
+                        // Process complete JSON messages
+                        ProcessJsonBuffer(jsonBuffer, gameTime);
                     }
                 }
             }
-
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception in data receiving loop: {ex.Message}");
+                IsConnected = false;
+                OnConnectionStatusChanged(false);
+            }
         }
+
+        private void ProcessJsonBuffer(StringBuilder jsonBuffer, GameTime gameTime)
+        {
+            string bufferString = jsonBuffer.ToString();
+            int jsonStartPosition = FindJsonStartPosition(bufferString);
+
+            if (jsonStartPosition != -1)
+            {
+                string json = bufferString.Substring(jsonStartPosition);
+                jsonBuffer.Clear().Append(json); // Reset buffer with cleaned JSON
+            }
+
+            int jsonEndPosition = FindJsonEndPosition(jsonBuffer.ToString());
+
+            if (jsonEndPosition != -1)
+            {
+                string completeJson = jsonBuffer.ToString().Substring(0, jsonEndPosition + 1);
+                jsonBuffer.Remove(0, jsonEndPosition + 1); // Remove processed JSON
+
+                try
+                {
+                    ProcessJson(completeJson, gameTime); // Deserialize and process JSON
+                }
+                catch (JsonException ex)
+                {
+                    Debug.WriteLine($"JSON Deserialization error: {ex.Message}");
+                    // Handle incomplete or malformed JSON object
+                }
+            }
+        }
+        private int FindJsonStartPosition(string buffer)
+        {
+            // Assuming JSON string starts after the first occurrence of '{'
+            return buffer.IndexOf('{');
+        }
+
+        private int FindJsonEndPosition(string buffer)
+        {
+            int depth = 0;
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                char c = buffer[i];
+                if (c == '{') depth++;
+                else if (c == '}')
+                {
+                    depth--;
+                    if (depth == 0) return i; // End of JSON object
+                }
+            }
+            return -1; // No complete JSON object found
+        }
+
+
+
+
 
 
 
 
         //public void UpdateClientStateWithPlayerData(ClientPlayer playerData, ClientState clientState)
         //{
-            
+
         //    // Assuming you have access to an instance of ClientState
         //  //  clientState.UpdateWithPlayerData(playerData);
         //    gameDesktop.AddClient(clientState);
@@ -189,7 +232,7 @@ namespace tibiamonoopengl.Protocol
         //    }
         //}
         private StringBuilder jsonBuffer = new StringBuilder();
-        private void ReceiveDataFromServer(byte[] data, int size)
+        private void ReceiveDataFromServer(byte[] data, int size, GameTime gameTime)
         {
             string receivedPart = Encoding.UTF8.GetString(data, 0, size);
             jsonBuffer.Append(receivedPart);
@@ -199,7 +242,7 @@ namespace tibiamonoopengl.Protocol
                 string completeJson = jsonBuffer.ToString();
                 jsonBuffer.Clear(); // Clear the buffer for the next message
 
-                ProcessJson(completeJson); // Process the complete JSON
+                ProcessJson(completeJson, gameTime); // Process the complete JSON
             }
         }
         private bool IsCompleteJson(string json)
@@ -211,7 +254,7 @@ namespace tibiamonoopengl.Protocol
         }
 
 
-        private void ProcessJson(string json)
+        private void ProcessJson(string json, GameTime gameTime)
         {
             try
             {
@@ -223,28 +266,32 @@ namespace tibiamonoopengl.Protocol
                 }
 
                 dynamic baseObject = JsonConvert.DeserializeObject<dynamic>(json);
-
-                if (baseObject.Property("player") != null)
+                Console.WriteLine(baseObject);
+                if (baseObject["player"] != null)
                 {
-                    var playerData = JsonConvert.DeserializeObject<Dictionary<string, ClientPlayer>>(json);
-                    ClientPlayer player = playerData["player"];
-                     clientState = new ClientState(packetStream);
-                    clientState.UpdateWithPlayerData(player);
-                    HandleSuccessfulLogin();
-                    //UpdateClientStateWithPlayerData(player, clientState);
-
-                    characterlist = true;
+                    JObject playerObject = baseObject["player"] as JObject;
+                    HandlePlayerLogin(playerObject);
                 }
-                else if (baseObject.Property("MapData") != null)
+                else if ((string)baseObject["Type"] != null)
                 {
-                    var mapData = JsonConvert.DeserializeObject<Dictionary<string, ClientMap>>(json);
-                    var mapDataJson = mapData["MapData"].ToString();
-                    // Convert the map data into a NetworkMessage format
-                    NetworkMessage mapMessage = ConvertMapDataToNetworkMessage(mapDataJson);
+                    string messageType = (string)baseObject["Type"];
+                    switch (messageType)
+                    {
+                        case "MapDescription":
+                            // Antag att du vill hantera kartbeskrivningen här
+                            HandleMapDescription(baseObject, gameTime);
+                            break;
+                        case "Heartbeat":
+                            HandleHeartbeat(baseObject);
+                            break;
+                        default:
+                            Debug.WriteLine("Unknown data type received.");
+                            break;
+                    }
                 }
                 else
                 {
-                    Debug.WriteLine("Unknown data type received.");
+                    Debug.WriteLine("No recognizable type found in JSON.");
                 }
             }
             catch (JsonException ex)
@@ -252,6 +299,115 @@ namespace tibiamonoopengl.Protocol
                 Debug.WriteLine($"JSON Deserialization error: {ex.Message}");
             }
         }
+
+        private void HandlePlayerLogin(JObject playerObject)
+        {
+            // Antag att ClientPlayer har en struktur som matchar 'player' delen av JSON.
+            ClientPlayer player = playerObject.ToObject<ClientPlayer>();
+
+            // Fortsätt med att hantera 'player' objektet som tidigare
+            string filepath = "C:\\Users\\dennis\\source\\repos\\tibiamonoopengl\\json\\MapDescription.json";
+            
+
+
+            clientState = new ClientState(packetStream, filepath);
+            clientState.UpdateWithPlayerData(player);
+            HandleSuccessfulLogin();
+
+            characterlist = true;
+        }
+
+        private void HandleMapDescription(dynamic baseObject, GameTime gameTime)
+        {
+            try
+            {
+                Task.Run(() => StartReceivingDataAsync(gameTime));
+                var mapDescription = JsonConvert.DeserializeObject<ClientMap>(baseObject);
+                clientState.Update(gameTime);
+
+                string filepath = "C:\\Users\\dennis\\source\\repos\\tibiamonoopengl\\json\\MapDescription.json";
+                ////MapDescription.LoadMapDescription(filepath);
+                tibiaGamePacketParserFactory.LoadMapDescription(filepath);
+                Console.WriteLine("sdfsdf");
+                // var mapDescription = JsonConvert.DeserializeObject<ClientMap>(json);
+
+
+                //// ProcessMapDescription(mapDescription);
+                // clientState.Viewport.Map = mapDescription;
+
+                //UpdateClientMap(mapDescription);
+
+
+
+            }
+            catch (JsonException jsonEx)
+            {
+                // Log the exception message and stack trace to see what went wrong
+                Console.WriteLine("JsonException: " + jsonEx.Message);
+                Console.WriteLine("StackTrace: " + jsonEx.StackTrace);
+            }
+            catch (Exception ex)
+            {
+                // Log any other exceptions that may occur during deserialization
+                Console.WriteLine("Exception: " + ex.Message);
+                Console.WriteLine("StackTrace: " + ex.StackTrace);
+            }
+        }
+
+        private void HandleHeartbeat(dynamic baseObject)
+        {
+            ReceiveHeartbeatFromServer(networkStream);
+        }
+
+        public void ReceiveHeartbeatFromServer(NetworkStream networkStream)
+        {
+            try
+            {
+                byte[] buffer = new byte[1024]; // Adjust the buffer size as needed
+                int bytesRead = networkStream.Read(buffer, 0, buffer.Length);
+                string jsonPacket = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
+                var heartbeatPacket = JsonConvert.DeserializeObject<HeartbeatPacket>(jsonPacket);
+
+                // Process the received heartbeat data here
+                // You can access heartbeatPacket.Type and heartbeatPacket.Timestamp
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        }
+        //private void ProcessMapDescription(MapDescription mapDescription)
+        //{
+        //    foreach (var tile in mapDescription.Tiles)
+        //    {
+        //        var clientTile = new ClientTile(new MapPosition(tile.Location.X, tile.Location.Y, tile.Location.Z));
+
+
+        //        foreach (var item in tile.Items)
+        //        {
+        //            //var itemType = GetItemTypeById(item.ID);
+        //            //var clientItem = new ClientItem(itemType, item.Subtype);
+        //            clientTile.Add(clientItem);
+        //        }
+
+        //        // Add the populated clientTile to your map
+        //        // This might involve updating a dictionary or list that represents the game map
+        //    }
+        //}
+
+
+        //public ItemType GetItemTypeById(int id)
+        //{
+        //    ItemType itemType;
+        //    if (Items.TryGetValue(id, out itemType))
+        //    {
+        //        return itemType;
+        //    }
+        //    return null; // or ItemType.NullType if you want to return a default value instead of null
+        //}
+
+
         private bool IsValidJson(string strInput)
         {
             if (string.IsNullOrWhiteSpace(strInput)) { return false; }
@@ -281,96 +437,13 @@ namespace tibiamonoopengl.Protocol
             }
         }
 
-        //// Example client-side method to receive data
-        //private void ReceiveDataFromServera(byte[] data, int size)
-        //{
-        //    // Convert the received byte array to a string
-        //    string receivedJson = Encoding.UTF8.GetString(data, 0, size);
-        //    receivedJson = receivedJson.TrimStart('\0');
-        //    debugManager.LogMessage(Log.Level.Debug, receivedJson);
-        //    Debug.WriteLine($"Received JSON: {receivedJson}");
-            
-        //    try
-        //    {
-        //        clientState = new ClientState(packetStream);
-        //        //var playerData = JsonConvert.DeserializeObject<ClientPlayer>(receivedJson);
-        //        // Deserialize the JSON string to the appropriate object
-        //        // Deserialize to a base type or a dynamic object to inspect the "Type" property
-        //        var baseObject = JsonConvert.DeserializeObject<dynamic>(receivedJson);
-
-        //        if (baseObject.Type == "PlayerData")
-        //        {
-        //            var playerData = JsonConvert.DeserializeObject<Dictionary<string, ClientPlayer>>(receivedJson);
-        //            if (playerData != null && playerData.ContainsKey("player"))
-        //            {
-        //                ClientPlayer player = playerData["player"];
-        //                HandleSuccessfulLogin();
-        //                // Pass the deserialized data to ClientState for further processing
-        //                UpdateClientStateWithPlayerData(player, clientState);
-
-        //                characterlist = true;
-        //                // Process the player data
-        //                // Here you can update the UI or game state based on the received player data
-        //                // ...
-        //                //UpdatePlayerState(player);
-        //                // HandleSuccessfulLogin();
-
-        //            }
-        //            else
-        //            {
-
-        //                Debug.WriteLine("Deserialization returned null or missing 'player' key.");
-        //            }
-        //        }
-        //        else if (baseObject.Type == "MapData")
-        //        {
-        //            var mapData = JsonConvert.DeserializeObject<Dictionary<string, ClientMap>>(receivedJson);
-
-        //            if (mapData != null && mapData.ContainsKey("MapData"))
-        //            {
-        //                // Extract the map data from the JSON
-        //                var mapDataJson = mapData["MapData"].ToString();
-        //                // Convert the map data into a NetworkMessage format
-        //                NetworkMessage mapMessage = ConvertMapDataToNetworkMessage(mapDataJson);
-
-        //                // Get the MapDescription packet parser
-        //                //var mapDescriptionParser = Protocol.Factory.CreatePacketHandler("MapDescription");
-        //                // Parse the map data
-        //                //Packet mapPacket = mapDescriptionParser.parser(mapMessage);
-        //            }
-        //        }
-        //        else
-        //        {
-        //            Debug.WriteLine("Unknown data type received.");
-        //        }
-
-
-
-
-        //        }
-        //    catch (JsonException ex)
-        //    {
-        //        Debug.WriteLine($"JSON Deserialization error: {ex.Message}");
-                
-        //        Console.WriteLine($"JSON Deserialization error: {ex.Message}");
-
-        //        debugManager.LogMessage(Log.Level.Error, ex.Message);
-        //    }
-        //}
-
-        // Method to convert JSON map data to NetworkMessage format
         private NetworkMessage ConvertMapDataToNetworkMessage(string mapDataJson)
         {
             debugManager.LogMessage(Log.Level.Debug, mapDataJson);
-            // Implement the logic to convert the JSON map data into the format expected by NetworkMessage
-            // This might involve parsing the JSON to extract tile information, creatures, items, etc.
-            // and then encoding this information in a byte array that NetworkMessage can understand.
-            // ...
 
-            // Assuming you have access to an instance of ClientState
-            bool encodedMapData = true; 
+            bool encodedMapData = true;
 
-                //MapPosition = MapData;
+            //MapPosition = MapData;
 
 
             return new NetworkMessage(encodedMapData);
@@ -382,7 +455,7 @@ namespace tibiamonoopengl.Protocol
             // and it's accessible in this context
 
             // Update the player's state in the viewport
-           clientViewport.Player = player;
+            clientViewport.Player = player;
 
             //// Update other game states or UI elements as needed
             //RefreshUI();
@@ -431,4 +504,7 @@ namespace tibiamonoopengl.Protocol
         }
         // Other methods like ProcessReceivedData, etc.
     }
+
+
+
 }

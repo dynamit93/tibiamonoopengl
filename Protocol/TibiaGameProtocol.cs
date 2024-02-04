@@ -123,7 +123,7 @@ namespace CTC
         /// Create a Protocol given a Game Data object (which contains the version.
         /// </summary>
         /// <param name="data"></param>
-        public TibiaGameProtocol(TibiaGameData data)
+        public TibiaGameProtocol(TibiaGameData data, string filepath)
         {
             if (data == null)
             {
@@ -148,7 +148,7 @@ namespace CTC
 
 
            // Stream f = Assembly.GetExecutingAssembly().GetManifestResourceStream("TibiaProtocolMap.xml");
-            Factory = new TibiaGamePacketParserFactory(f, data);
+            Factory = new TibiaGamePacketParserFactory(f, data, filepath);
 
             AddPacketHandler("ErrorMessage", ErrorMessage);
             AddPacketHandler("MOTD", MOTD);
@@ -226,6 +226,7 @@ namespace CTC
         {
             int packetType = nmsg.ReadByte();
 
+
             if (PacketParsers.ContainsKey(packetType))
             {
                 PacketParser pp = PacketParsers[packetType];
@@ -244,7 +245,7 @@ namespace CTC
             }
             else
             {
-                Log.Warning("Unknown packet type parsed 0x" + packetType.ToString("X2"), this);
+                Log.Fatal("Unknown packet type parsed 0x" + packetType.ToString("X2"), this);
             }
         }
     }

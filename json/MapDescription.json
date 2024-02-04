@@ -1,0 +1,1325 @@
+{
+  "Type": "MapDescription",
+  "Tiles": [
+    {
+      "Location": {
+        "X": 98,
+        "Y": 111,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 99,
+        "Y": 111,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 100,
+        "Y": 111,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 101,
+        "Y": 111,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 102,
+        "Y": 111,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 103,
+        "Y": 111,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 104,
+        "Y": 111,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 105,
+        "Y": 111,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 106,
+        "Y": 111,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 107,
+        "Y": 111,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 108,
+        "Y": 111,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 98,
+        "Y": 112,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 98,
+        "Y": 113,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 98,
+        "Y": 114,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 98,
+        "Y": 115,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 99,
+        "Y": 112,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 99,
+        "Y": 113,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 99,
+        "Y": 114,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 99,
+        "Y": 115,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 100,
+        "Y": 112,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 100,
+        "Y": 113,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 100,
+        "Y": 114,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 100,
+        "Y": 115,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 101,
+        "Y": 112,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 101,
+        "Y": 113,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 101,
+        "Y": 114,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 101,
+        "Y": 115,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 102,
+        "Y": 112,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 102,
+        "Y": 113,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 102,
+        "Y": 114,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 102,
+        "Y": 115,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 103,
+        "Y": 112,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 103,
+        "Y": 113,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 103,
+        "Y": 114,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 103,
+        "Y": 115,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 104,
+        "Y": 112,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 104,
+        "Y": 113,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 104,
+        "Y": 114,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 104,
+        "Y": 115,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 105,
+        "Y": 112,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 105,
+        "Y": 113,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 105,
+        "Y": 114,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 105,
+        "Y": 115,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 106,
+        "Y": 112,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 106,
+        "Y": 113,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 106,
+        "Y": 114,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 106,
+        "Y": 115,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 107,
+        "Y": 112,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 107,
+        "Y": 113,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 107,
+        "Y": 114,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 107,
+        "Y": 115,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 108,
+        "Y": 112,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 108,
+        "Y": 113,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 108,
+        "Y": 114,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 108,
+        "Y": 115,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 98,
+        "Y": 116,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 98,
+        "Y": 117,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 98,
+        "Y": 118,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 98,
+        "Y": 119,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 99,
+        "Y": 116,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 99,
+        "Y": 117,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 99,
+        "Y": 118,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 99,
+        "Y": 119,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 100,
+        "Y": 116,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 100,
+        "Y": 117,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 100,
+        "Y": 118,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 100,
+        "Y": 119,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 101,
+        "Y": 116,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 101,
+        "Y": 117,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 101,
+        "Y": 118,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 101,
+        "Y": 119,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 102,
+        "Y": 116,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 102,
+        "Y": 117,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 102,
+        "Y": 118,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 102,
+        "Y": 119,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 103,
+        "Y": 116,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 103,
+        "Y": 117,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 103,
+        "Y": 118,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 103,
+        "Y": 119,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 104,
+        "Y": 116,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 104,
+        "Y": 117,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 104,
+        "Y": 118,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 104,
+        "Y": 119,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 105,
+        "Y": 116,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 105,
+        "Y": 117,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 105,
+        "Y": 118,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 105,
+        "Y": 119,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 106,
+        "Y": 116,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 106,
+        "Y": 117,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 106,
+        "Y": 118,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 106,
+        "Y": 119,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 107,
+        "Y": 116,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 107,
+        "Y": 117,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 107,
+        "Y": 118,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 107,
+        "Y": 119,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 108,
+        "Y": 116,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 108,
+        "Y": 117,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 108,
+        "Y": 118,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 108,
+        "Y": 119,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 98,
+        "Y": 120,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 99,
+        "Y": 120,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 100,
+        "Y": 120,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 101,
+        "Y": 120,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 102,
+        "Y": 120,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 103,
+        "Y": 120,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 104,
+        "Y": 120,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 105,
+        "Y": 120,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 106,
+        "Y": 120,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 107,
+        "Y": 120,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    },
+    {
+      "Location": {
+        "X": 108,
+        "Y": 120,
+        "Z": 7
+      },
+      "Items": [],
+      "Ground": {
+        "Id": 101,
+        "Name": "earth"
+      }
+    }
+  ]
+}

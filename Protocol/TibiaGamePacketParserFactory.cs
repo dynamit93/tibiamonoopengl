@@ -6,9 +6,60 @@ using System.IO;
 using System.Reflection;
 using System.IO.Pipes;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace CTC
 {
+
+    public class MapDescription
+    {
+        public List<Tile> Tiles { get; set; }
+
+
+        public static MapDescription LoadMapDescription(string filePath)
+        {
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            using (var stream = File.OpenRead(filePath))
+            {
+                return JsonSerializer.Deserialize<MapDescription>(stream, options);
+            }
+
+        }
+
+
+    }
+
+    public class Tile
+    {
+        public Location Location { get; set; }
+        public Ground Ground { get; set; }
+        public List<Item> Items { get; set; }
+    }
+
+    public class Location
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int Z { get; set; }
+    }
+    public class Ground
+    {
+        public int ID { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class Item
+    {
+        public int ID { get; set; }
+        public int Subtype { get; set; }
+        // Additional properties...
+    }
+
+
 
     public class Packet
     {
@@ -73,7 +124,8 @@ namespace CTC
     {
         private TibiaGameData GameData;
         private List<PacketParser> AllHandlers = new List<PacketParser>();
-        
+        private MapDescription mapDescription;
+
         /// <summary>
         /// We need to track the current map position in the protocol, since some packets depend on where we are.
         /// </summary>
@@ -90,15 +142,14 @@ namespace CTC
         /// Loads all mapped handlers from the file.
         /// </summary>
         /// <param name="File"></param>
-        public TibiaGamePacketParserFactory(Stream fileStream, TibiaGameData data)
+        public TibiaGamePacketParserFactory(Stream fileStream, TibiaGameData data,string filepath)
         {
 
-            Console.WriteLine("Data:",data.ToString());
-            foreach (PacketParser Name in AllHandlers) {
-                Debug.WriteLine("AllHandlers:", Name);
-            }
-            
+
             GameData = data;
+            mapDescription = MapDescription.LoadMapDescription(filepath);
+            //LoadMapDescription(mapDescriptionFilePath);
+
 
             if (fileStream == null)
             {
@@ -146,6 +197,11 @@ namespace CTC
             }
         }
 
+
+        public void LoadMapDescription(string filepath)
+        {
+            mapDescription = MapDescription.LoadMapDescription(filepath);
+        }
         /// <summary>
         /// Given a packet type and the protocol version, returns the handler that will parse the packet.
         /// This function is quite slow, so the value should be cached.
@@ -205,12 +261,40 @@ namespace CTC
                     return props;
                 };
             else if (parserName == "MapDescription")
-                return delegate(NetworkMessage nmsg)
+            return delegate(NetworkMessage nmsg)
                 {
+                    Console.WriteLine(nmsg.ReadString());
+                    Console.WriteLine("testprint");
                     Packet props = new Packet(parserName);
                     CurrentPosition = ReadMapPosition(nmsg);
-                    props["Center"] = CurrentPosition;
-                    props["Tiles"] = ReadMapDescription(nmsg, CurrentPosition.X - 8, CurrentPosition.Y - 6, CurrentPosition.Z, 18, 14);
+
+                    if (mapDescription.Tiles != null && mapDescription.Tiles.Any())
+                    {
+                        var centerTile = mapDescription.Tiles.First();
+                        props["Center"] = centerTile.Location;
+                        props["Tiles"] = mapDescription.Tiles; // Här antar vi att din Packet-klass kan hantera en lista av Tiles direkt
+                    }
+                    else
+                    {
+                        Console.WriteLine("No tiles found in MapDescription.");
+                        // Hantera detta fall, kanske genom att returnera en tom Packet eller sätta ett felmeddelande
+                    }
+
+
+                    //Console.WriteLine("Parsing MapDescription...");
+
+                    //// Add logging for CurrentPosition
+                    //CurrentPosition = ReadMapPosition(nmsg);
+                    //Console.WriteLine($"CurrentPosition: {CurrentPosition}");
+
+                    //Packet props = new Packet(parserName);
+                    //props["Center"] = CurrentPosition;
+
+                    //// Add logging for Tiles
+                    //Console.WriteLine("Parsing Tiles...");
+                    //props["Tiles"] = ReadMapDescription(nmsg, CurrentPosition.X - 8, CurrentPosition.Y - 6, CurrentPosition.Z, 18, 14);
+
+                    Console.WriteLine("MapDescription parsed successfully.");
                     return props;
                 };
 
@@ -804,6 +888,7 @@ namespace CTC
         /// <returns></returns>
         private MapPosition ReadMapPosition(NetworkMessage nmsg)
         {
+
             int x = nmsg.ReadU16();
             int y = nmsg.ReadU16();
             int z = nmsg.ReadByte();

@@ -87,12 +87,12 @@ namespace tibiamonoopengl.Protocol
 
 
                 // Example usage
-                string hexData = $"{BitConverter.ToString(dataBuffer)}"; // Your hex data
-                hexData = hexData.Replace("-", ""); // Remove dashes if present
-                byte[] byteArray = HexStringToByteArray(hexData);
-                string result = ByteArrayToString(byteArray);
+                //string hexData = $"{BitConverter.ToString(dataBuffer)}"; // Your hex data
+                //hexData = hexData.Replace("-", ""); // Remove dashes if present
+                //byte[] byteArray = HexStringToByteArray(hexData);
+               // string result = ByteArrayToString(byteArray);
 
-                Debug.WriteLine("hexData: ",result);
+                //Debug.WriteLine("hexData: ",result);
 
                 NetworkMessage message = new NetworkMessage();
                 message.SetData(dataBuffer, totalBytesRead);

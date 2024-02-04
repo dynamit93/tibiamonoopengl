@@ -49,6 +49,7 @@ namespace CTC
         {
             get
             {
+
                 ClientTile Tile = null;
                 if (Tiles.TryGetValue(Position, out Tile))
                     return Tile;
